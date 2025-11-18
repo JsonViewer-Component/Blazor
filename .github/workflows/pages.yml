@@ -1,12 +1,12 @@
-name: 🚀 Deploy Blazor to GitHub Pages
+name: Deploy to GitHub Pages
 
 on:
   push:
     branches: [ main ]
     paths:
       - 'src/**'
-      - 'samples/BlazorWasm.NET8/**'
-      - 'Documents/**'
+      - 'samples/**'
+      - '.github/workflows/pages.yml'
   workflow_dispatch:
 
 permissions:
@@ -23,115 +23,47 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-    - name: 📥 Checkout repository
+    - name: Checkout
       uses: actions/checkout@v4
     
-    - name: 🔧 Setup .NET 8
+    - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: '8.0.x'
     
-    - name: 📦 Restore dependencies
+    - name: Restore
       run: dotnet restore samples/BlazorWasm.NET8/BlazorWasm.NET8.csproj
     
-    - name: 🏗️ Build Blazor WebAssembly
-      run: dotnet publish samples/BlazorWasm.NET8/BlazorWasm.NET8.csproj -c Release -o output
+    - name: Publish
+      run: dotnet publish samples/BlazorWasm.NET8/BlazorWasm.NET8.csproj -c Release -o release
     
-    - name: 🔧 Fix base href for GitHub Pages
-      run: |
-        sed -i 's/<base href="\/" \/>/<base href="\/blazor\/" \/>/g' output/wwwroot/index.html
+    - name: Change base-tag
+      run: sed -i 's/<base href="\/" \/>/<base href="\/blazor\/" \/>/g' release/wwwroot/index.html
     
-    - name: 📁 Prepare GitHub Pages structure
-      run: |
-        # ایجاد پوشه موقت برای Pages
-        mkdir -p _site
-        
-        # کپی صفحه اصلی از Documents (اگر وجود داشته باشد)
-        if [ -f "Documents/index.html" ]; then
-          cp Documents/index.html _site/
-        else
-          # ایجاد صفحه پیش‌فرض
-          cat > _site/index.html << 'EOF'
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="refresh" content="0; url=./demo/">
-    <title>JsonViewer Blazor Demo</title>
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-        .container {
-            text-align: center;
-        }
-        h1 { font-size: 3em; margin-bottom: 20px; }
-        a {
-            display: inline-block;
-            padding: 15px 30px;
-            background: white;
-            color: #667eea;
-            text-decoration: none;
-            border-radius: 8px;
-            font-weight: 600;
-            transition: transform 0.2s;
-        }
-        a:hover { transform: scale(1.05); }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h1>🚀 JsonViewer Blazor</h1>
-        <p>Redirecting to demo...</p>
-        <a href="./demo/">Go to Demo →</a>
-    </div>
-</body>
-</html>
-EOF
-        fi
-        
-        # کپی فایل‌های استاتیک اضافی از Documents (اگر داری)
-        if [ -d "Documents/assets" ]; then
-          cp -r Documents/assets _site/
-        fi
-        
-        # کپی دمو Blazor به پوشه demo
-        mkdir -p _site/demo
-        cp -r output/wwwroot/* _site/demo/
-        
-        # ✅ اضافه کردن .nojekyll برای غیرفعال کردن Jekyll
-        touch _site/.nojekyll
-        
-        # نمایش ساختار نهایی
-        echo "📂 Final structure:"
-        ls -la _site/
-        echo "📂 Demo folder:"
-        ls -la _site/demo/ | head -n 10
+    - name: Add .nojekyll
+      run: touch release/wwwroot/.nojekyll
     
-    - name: 🔧 Setup GitHub Pages
+    - name: Setup Pages
       uses: actions/configure-pages@v4
     
-    - name: 📤 Upload Pages artifact
+    - name: Upload artifact
       uses: actions/upload-pages-artifact@v3
       with:
-        path: '_site'
+        path: release/wwwroot
 
   deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    
+    permissions:
+      pages: write
+      id-token: write
+    
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
-    needs: build
     
     steps:
-    - name: 🚀 Deploy to GitHub Pages
+    - name: Deploy to GitHub Pages
       id: deployment
       uses: actions/deploy-pages@v4
