@@ -10,9 +10,11 @@ on:
 
 permissions:
   contents: write
+  pages: write
+  id-token: write
 
 jobs:
-  deploy-demo:
+  build-and-deploy:
     runs-on: ubuntu-latest
     
     steps:
@@ -33,22 +35,25 @@ jobs:
     - name: 📤 Publish to output
       run: dotnet publish samples/BlazorWasm.NET8/BlazorWasm.NET8.csproj -c Release -o publish
     
-    - name: 🔧 Fix base href in index.html
+    - name: 🔧 Fix base href for GitHub Pages
       run: |
-        sed -i 's/<base href="\/" \/>/<base href="\/blazor\/demo\/" \/>/g' publish/wwwroot/index.html
+        sed -i 's/<base href="\/" \/>/<base href="\/blazor\/" \/>/g' publish/wwwroot/index.html
     
-    - name: 📁 Copy files to docs/demo
+    - name: 📁 Prepare deployment folder
       run: |
-        rm -rf docs/demo
-        mkdir -p docs/demo
-        cp -r publish/wwwroot/* docs/demo/
-    
-    - name: 📝 Create .nojekyll file
-      run: touch docs/.nojekyll
+        # پاک کردن محتوای قبلی
+        rm -rf Documents/demo
+        mkdir -p Documents/demo
+        
+        # کپی فایل‌های build شده
+        cp -r publish/wwwroot/* Documents/demo/
+        
+        # ✅ ایجاد .nojekyll برای غیرفعال کردن Jekyll
+        touch Documents/.nojekyll
     
     - name: ✅ Commit and push changes
       run: |
         git config --local user.email "github-actions[bot]@users.noreply.github.com"
         git config --local user.name "github-actions[bot]"
-        git add docs/
+        git add Documents/
         git diff --quiet && git diff --staged --quiet || (git commit -m "🚀 Auto-deploy demo [skip ci]" && git push)
