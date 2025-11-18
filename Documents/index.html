@@ -1,47 +1,122 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="refresh" content="0; url=./demo/">
-    <title>Redirecting to Demo...</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JsonViewer - Blazor Component</title>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
         body {
-            font-family: system-ui, -apple-system, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            margin: 0;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
         }
+        
         .container {
             text-align: center;
+            max-width: 800px;
+            padding: 40px 20px;
         }
-        .spinner {
-            width: 50px;
-            height: 50px;
-            border: 5px solid rgba(255,255,255,0.3);
-            border-top-color: white;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 20px auto;
+        
+        h1 {
+            font-size: 4em;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
         }
-        @keyframes spin {
-            to { transform: rotate(360deg); }
+        
+        .subtitle {
+            font-size: 1.5em;
+            margin-bottom: 40px;
+            opacity: 0.9;
         }
-        a {
+        
+        .buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 15px 40px;
+            background: white;
+            color: #667eea;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 1.1em;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+        
+        .btn-secondary {
+            background: transparent;
+            border: 2px solid white;
             color: white;
-            text-decoration: underline;
+        }
+        
+        .features {
+            margin-top: 60px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        
+        .feature {
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .feature h3 {
+            margin-bottom: 10px;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="spinner"></div>
-        <h1>Redirecting to Blazor Demo...</h1>
-        <p>If you are not redirected, <a href="./demo/">click here</a></p>
+        <h1>🚀 JsonViewer</h1>
+        <p class="subtitle">A powerful, interactive JSON viewer component for Blazor</p>
+        
+        <div class="buttons">
+            <a href="./demo/" class="btn">🎮 Try Live Demo</a>
+            <a href="https://github.com/jsonviewer-component/blazor" class="btn btn-secondary">📦 View on GitHub</a>
+        </div>
+        
+        <div class="features">
+            <div class="feature">
+                <h3>⚡ Fast</h3>
+                <p>Optimized for large JSON files</p>
+            </div>
+            <div class="feature">
+                <h3>🎨 Beautiful</h3>
+                <p>Syntax highlighting & dark mode</p>
+            </div>
+            <div class="feature">
+                <h3>🔍 Interactive</h3>
+                <p>Expand/collapse nodes</p>
+            </div>
+            <div class="feature">
+                <h3>📋 Copy Ready</h3>
+                <p>One-click copy to clipboard</p>
+            </div>
+        </div>
     </div>
 </body>
 </html>
