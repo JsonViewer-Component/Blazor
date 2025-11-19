@@ -39,25 +39,25 @@ A powerful, feature-rich JSON viewer component for Blazor applications with VS C
 Install via NuGet Package Manager:
 ```bash
 dotnet add package JsonViewer.Blazor
-
+```
 Or via Package Manager Console:
 
-powershell
+```powershell
 Install-Package JsonViewer.Blazor
-
+```
 ---
 
 ## 🚀 Quick Start
 
 ### 1️⃣ Add namespace to `_Imports.razor`:
 
-razor
+```razor
 @using JsonViewerComponent
 @using JsonViewerComponent.Components
-
+```
 ### 2️⃣ Use in your component:
 
-razor
+```razor
 @page "/json-demo"
 
 <JsonViewer JsonData="@jsonString" IsEditable="true" />
@@ -70,28 +70,28 @@ private string jsonString = @"{
 ""hobbies"": [""reading"", ""gaming"", ""coding""]
 }";
 }
-
+```
 ---
 
 ## 📖 Usage Examples
 
 ### Read-Only Mode
 
-razor
+```razor
 <JsonViewer JsonData="@jsonData" IsEditable="false" />
-
+```
 ### Editable Mode with Two-Way Binding
 
-razor
+```razor
 <JsonViewer @bind-JsonData="jsonData" IsEditable="true" />
 
 @code {
 private string jsonData = "{}";
 }
-
+```
 ### Dynamic JSON Loading
 
-razor
+```razor
 <button @onclick="LoadSampleData">Load Sample</button>
 <JsonViewer JsonData="@jsonData" IsEditable="true" />
 
@@ -103,7 +103,7 @@ private void LoadSampleData()
 jsonData = @"{""userId"": 1, ""userName"": ""Alice""}";
 }
 }
-
+```
 ---
 
 ## ⌨️ Keyboard Shortcuts
@@ -120,10 +120,10 @@ jsonData = @"{""userId"": 1, ""userName"": ""Alice""}";
 
 The component automatically saves your theme preference to localStorage:
 
-razor
+```razor
 @* Theme persists across page refreshes *@
 <JsonViewer JsonData="@jsonData" IsEditable="true" />
-
+```
 ---
 
 ## 📊 JSON Statistics
@@ -225,31 +225,3 @@ Made with ❤️ by [JsonViewer Component](https://github.com/JsonViewer-Compone
 
 
 ---
-
-## 📂 **3. ساختار فایل‌ها**
-
-فایل‌ها رو اینجوری سازماندهی کن:
-
-Blazor/
-├── .github/
-│   └── workflows/
-├── src/
-│   ├── JsonViewerComponent/
-│   │   ├── Components/
-│   │   ├── JsonViewerComponent.csproj  ← فایل جدید
-│   │   └── ...
-│   └── JsonViewerComponent.sln
-├── logo.png                            ← لوگوی تو
-├── README.md                            ← فایل README جدید
-└── LICENSE
-
-
----
-
-## 🔧 **4. دستورات Build و Test**
-
-### **مرحله 1: کپی لوگو**
-
-```bash
-# اگه لوگو در پوشه دیگه‌ای هست، کپیش کن به root
-cp path/to/logo.png ./logo.png
