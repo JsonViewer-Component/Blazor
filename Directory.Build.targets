@@ -1,0 +1,20 @@
+<Project>
+  <!-- 🎯 Target های مشترک برای همه پروژه‌ها -->
+
+  <!-- پاک‌سازی فایل‌های اضافی بعد از Build -->
+  <Target Name="CleanupAfterBuild" AfterTargets="Build">
+    <Message Text="🧹 پاک‌سازی فایل‌های موقت..." Importance="high" />
+  </Target>
+
+  <!-- نمایش پیام موفقیت بعد از Build -->
+  <Target Name="ShowBuildSuccess" AfterTargets="Build">
+    <Message Text="✅ بیلد پروژه $(MSBuildProjectName) با موفقیت انجام شد!" Importance="high" />
+  </Target>
+
+  <!-- کپی فایل‌های Static در پروژه‌های Blazor -->
+  <Target Name="CopyStaticAssets" AfterTargets="Build" Condition="$(MSBuildProjectFile.Contains('Blazor'))">
+    <Message Text="📦 کپی Static Assets..." Importance="high" />
+  </Target>
+
+</Project>
+

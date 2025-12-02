@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  blazor-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: jsonviewer-blazor
+    ports:
+      - "8080:80"
+      - "8443:443"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+    restart: unless-stopped
+    networks:
+      - blazor-network
+
+networks:
+  blazor-network:
+    driver: bridge
+

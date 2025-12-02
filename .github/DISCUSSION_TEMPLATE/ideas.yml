@@ -1,0 +1,31 @@
+labels: [idea]
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for sharing your idea! We're excited to hear your thoughts.
+
+  - type: textarea
+    id: idea
+    attributes:
+      label: 💡 Your Idea
+      description: Describe your idea
+      placeholder: I think we should...
+    validations:
+      required: true
+
+  - type: textarea
+    id: benefits
+    attributes:
+      label: 🎯 Benefits
+      description: How would this benefit the community?
+      placeholder: This would help because...
+
+  - type: textarea
+    id: implementation
+    attributes:
+      label: 🔧 Possible Implementation
+      description: Do you have any ideas on how this could be implemented?
+      placeholder: We could implement this by...
+

@@ -1,0 +1,78 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      // 🚀 اجرای Blazor WebAssembly Demo
+      "name": "Launch Blazor WASM Demo",
+      "type": "blazorwasm",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/src/Blazor.Demo",
+      "browser": "edge",
+      "url": "https://localhost:5001",
+      "webRoot": "${workspaceFolder}/src/Blazor.Demo/wwwroot",
+      "inspectUri": "{wsProtocol}://{url.hostname}:{url.port}/_framework/debug/ws-proxy?browser={browserInspectUri}",
+      "timeout": 120000,
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "preLaunchTask": "build-blazor-demo"
+    },
+    {
+      // 🐛 دیباگ Component Library
+      "name": "Debug Component Library",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build-component",
+      "program": "${workspaceFolder}/src/Component/bin/Debug/net7.0/Component.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}/src/Component",
+      "stopAtEntry": false,
+      "console": "internalConsole"
+    },
+    {
+      // 🔧 Attach به Process
+      "name": "Attach to .NET Process",
+      "type": "coreclr",
+      "request": "attach",
+      "processId": "${command:pickProcess}"
+    },
+    {
+      // 🌐 اجرای با Browser (Chrome)
+      "name": "Launch with Chrome",
+      "type": "blazorwasm",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/src/Blazor.Demo",
+      "browser": "chrome",
+      "url": "https://localhost:5001",
+      "webRoot": "${workspaceFolder}/src/Blazor.Demo/wwwroot",
+      "timeout": 120000
+    },
+    {
+      // 🔥 Hot Reload Mode
+      "name": "Hot Reload Demo",
+      "type": "blazorwasm",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/src/Blazor.Demo",
+      "preLaunchTask": "watch-demo",
+      "browser": "edge",
+      "url": "https://localhost:5001",
+      "webRoot": "${workspaceFolder}/src/Blazor.Demo/wwwroot",
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "DOTNET_WATCH": "1"
+      }
+    }
+  ],
+  "compounds": [
+    {
+      // 🎯 اجرای همزمان چند پروژه
+      "name": "Full Stack Debug",
+      "configurations": [
+        "Launch Blazor WASM Demo",
+        "Debug Component Library"
+      ],
+      "stopAll": true
+    }
+  ]
+}
+

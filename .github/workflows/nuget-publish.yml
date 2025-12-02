@@ -1,0 +1,77 @@
+name: 📦 Publish to NuGet
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to publish (e.g., 1.0.0)'
+        required: true
+      prerelease:
+        description: 'Is this a prerelease?'
+        type: boolean
+        default: false
+
+env:
+  DOTNET_VERSION: '7.0.x'
+  NUGET_SOURCE: 'https://api.nuget.org/v3/index.json'
+  PROJECT_PATH: 'src/Component/Component.csproj'
+
+jobs:
+  publish:
+    name: 🚀 Build & Publish to NuGet
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: 📥 Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: ⚙️ Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+
+    - name: 📦 Restore dependencies
+      run: dotnet restore JsonViewer.Blazor.sln
+
+    - name: 🏗️ Build
+      run: dotnet build JsonViewer.Blazor.sln --configuration Release --no-restore
+
+    - name: 🧪 Run tests
+      run: dotnet test JsonViewer.Blazor.sln --configuration Release --no-build --verbosity normal
+
+    - name: 📦 Pack Component
+      run: |
+        dotnet pack ${{ env.PROJECT_PATH }} \
+          --configuration Release \
+          --no-build \
+          --output ./packages \
+          /p:PackageVersion=${{ github.event.inputs.version || github.event.release.tag_name }} \
+          /p:IncludeSymbols=true \
+          /p:SymbolPackageFormat=snupkg
+
+    - name: 🚀 Push to NuGet
+      run: |
+        dotnet nuget push ./packages/*.nupkg \
+          --api-key ${{ secrets.NUGET_API_KEY }} \
+          --source ${{ env.NUGET_SOURCE }} \
+          --skip-duplicate
+
+    - name: 📤 Upload NuGet Package Artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: nuget-packages
+        path: ./packages/*.nupkg
+
+    - name: 📝 Create Release Notes
+      if: github.event_name == 'release'
+      run: |
+        echo "## 📦 NuGet Package Published" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "- **Package**: JsonViewer.Blazor" >> $GITHUB_STEP_SUMMARY
+        echo "- **Version**: ${{ github.event.release.tag_name }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **NuGet**: https://www.nuget.org/packages/JsonViewer.Blazor" >> $GITHUB_STEP_SUMMARY
+

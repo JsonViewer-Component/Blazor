@@ -1,0 +1,239 @@
+﻿@using Component.Core.Shared
+@using Component.Services
+@inject IOptimizedFileDownloadService FileDownloadService
+
+<button @onclick="HandleExportClick"
+        class="@ButtonClass"
+        title="@Title"
+        disabled="@IsDisabled">
+    <Icon Name="@IconName" />
+    @if (!string.IsNullOrEmpty(ButtonText))
+    {
+        <span class="ms-1">@ButtonText</span>
+    }
+    @if (isExporting)
+    {
+        <span class="spinner-border spinner-border-sm ms-1" role="status">
+            <span class="visually-hidden">Exporting...</span>
+        </span>
+    }
+</button>
+
+@using Component.Services
+@using System.Text.Json.Nodes
+@using System.Text.Json
+@inject IOptimizedFileDownloadService FileDownloadService
+
+<button @onclick="HandleExportClick"
+        class="@ButtonClass"
+        title="@Title"
+        disabled="@IsDisabled">
+    <Icon Name="@IconName" />
+    @if (!string.IsNullOrEmpty(ButtonText))
+    {
+        <span class="ms-1">@ButtonText</span>
+    }
+    @if (isExporting)
+    {
+        <span class="spinner-border spinner-border-sm ms-1" role="status">
+            <span class="visually-hidden">Exporting...</span>
+        </span>
+    }
+</button>
+
+@code {
+    #region Parameters
+
+    /// <summary>
+    /// JsonNode از JsonViewer (System.Text.Json)
+    /// </summary>
+    [Parameter]
+    public JsonNode? JsonToken { get; set; }
+
+    /// <summary>
+    /// JSON Data به صورت String
+    /// </summary>
+    [Parameter]
+    public string? JsonData { get; set; }
+
+    /// <summary>
+    /// پیشوند نام فایل
+    /// </summary>
+    [Parameter]
+    public string FileNamePrefix { get; set; } = "json_export";
+
+    /// <summary>
+    /// رویداد اطلاع‌رسانی
+    /// </summary>
+    [Parameter]
+    public EventCallback<(string message, string type)> OnNotification { get; set; }
+
+    #endregion
+
+    #region UI Customization
+
+    /// <summary>
+    /// عنوان Tooltip دکمه
+    /// </summary>
+    [Parameter]
+    public string Title { get; set; } = "Export to file";
+
+    /// <summary>
+    /// کلاس‌های CSS دکمه
+    /// </summary>
+    [Parameter]
+    public string ButtonClass { get; set; } = "btn btn-sm btn-light mb-2";
+
+    /// <summary>
+    /// نام آیکون
+    /// </summary>
+    [Parameter]
+    public string IconName { get; set; } = "download";
+
+    /// <summary>
+    /// متن اختیاری کنار آیکون
+    /// </summary>
+    [Parameter]
+    public string ButtonText { get; set; } = string.Empty;
+
+    #endregion
+
+    #region Private Fields
+
+    private bool isExporting = false;
+    private const int LARGE_FILE_THRESHOLD = 5 * 1024 * 1024;
+
+    /// <summary>
+    /// وضعیت فعال/غیرفعال دکمه
+    /// </summary>
+    private bool IsDisabled => (JsonToken == null && string.IsNullOrEmpty(JsonData)) || isExporting;
+
+    #endregion
+
+    #region Main Methods
+
+    /// <summary>
+    /// مدیریت کلیک دکمه Export
+    /// </summary>
+    private async Task HandleExportClick()
+    {
+        // بررسی داده‌های خالی
+        if (JsonToken == null && string.IsNullOrEmpty(JsonData))
+            return;
+
+        isExporting = true;
+        StateHasChanged();
+
+        try
+        {
+            // دریافت محتوا و فایل‌نیم
+            var content = GetExportContent();
+            var fileName = GetExportFileName();
+            var fullFileName = $"{fileName}.json";
+            var contentSize = Encoding.UTF8.GetByteCount(content);
+
+            // تشخیص خودکار برای فایل‌های بزرگ
+            if (contentSize > LARGE_FILE_THRESHOLD)
+            {
+                await FileDownloadService.DownloadLargeFileAsync(
+                    fullFileName,
+                    content,
+                    "application/json",
+                    chunkSize: 1024 * 1024
+                );
+            }
+            else
+            {
+                await FileDownloadService.DownloadFileAsync(
+                    fullFileName,
+                    content,
+                    "application/json"
+                );
+            }
+
+            // اطلاع‌رسانی موفقیت
+            await SendNotification(
+                $"File '{fullFileName}' ({FormatBytes(contentSize)}) exported successfully",
+                "success"
+            );
+        }
+        catch (Exception ex)
+        {
+            // اطلاع‌رسانی خطا
+            await SendNotification(
+                $"Failed to export: {ex.Message}",
+                "error"
+            );
+
+            Console.WriteLine($"Export error: {ex}");
+        }
+        finally
+        {
+            isExporting = false;
+            StateHasChanged();
+        }
+    }
+
+    #endregion
+
+    #region Helper Methods
+
+    /// <summary>
+    /// دریافت محتوای JSON فرمت‌شده برای Export
+    /// </summary>
+    private string GetExportContent()
+    {
+        if (JsonToken != null)
+        {
+            // ✅ استفاده از System.Text.Json
+            var options = new JsonSerializerOptions
+            {
+                WriteIndented = true
+            };
+
+            return JsonToken.ToJsonString(options);
+        }
+
+        return JsonData ?? string.Empty;
+    }
+
+    /// <summary>
+    /// تولید نام فایل با Timestamp
+    /// </summary>
+    private string GetExportFileName()
+    {
+        var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
+        return $"{FileNamePrefix}_{timestamp}";
+    }
+
+    /// <summary>
+    /// ارسال پیام اطلاع‌رسانی به Parent Component
+    /// </summary>
+    private async Task SendNotification(string message, string type)
+    {
+        if (OnNotification.HasDelegate)
+        {
+            await OnNotification.InvokeAsync((message, type));
+        }
+    }
+
+    /// <summary>
+    /// تبدیل Bytes به فرمت خوانا
+    /// </summary>
+    private string FormatBytes(long bytes)
+    {
+        string[] suffixes = { "B", "KB", "MB", "GB", "TB" };
+        int counter = 0;
+        decimal number = bytes;
+
+        while (Math.Round(number / 1024) >= 1 && counter < suffixes.Length - 1)
+        {
+            number /= 1024;
+            counter++;
+        }
+
+        return $"{number:n1} {suffixes[counter]}";
+    }
+
+    #endregion
+}

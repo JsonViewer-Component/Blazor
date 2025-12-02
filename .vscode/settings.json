@@ -1,0 +1,164 @@
+{
+  // 🎨 ظاهر و رنگ‌ها
+  "workbench.colorTheme": "Default Dark Modern",
+  "editor.fontFamily": "'Cascadia Code', 'Fira Code', Consolas, 'Courier New', monospace",
+  "editor.fontSize": 14,
+  "editor.fontLigatures": true,
+  "editor.lineHeight": 22,
+  "editor.cursorBlinking": "smooth",
+  "editor.cursorSmoothCaretAnimation": "on",
+
+  // ✨ رفتار ویرایشگر
+  "editor.formatOnSave": true,
+  "editor.formatOnPaste": true,
+  "editor.formatOnType": false,
+  "editor.tabSize": 4,
+  "editor.insertSpaces": true,
+  "editor.detectIndentation": true,
+  "editor.wordWrap": "on",
+  "editor.minimap.enabled": true,
+  "editor.minimap.renderCharacters": false,
+  "editor.suggestSelection": "first",
+  "editor.quickSuggestions": {
+    "other": true,
+    "comments": false,
+    "strings": true
+  },
+  "editor.bracketPairColorization.enabled": true,
+  "editor.guides.bracketPairs": true,
+  "editor.inlineSuggest.enabled": true,
+  "editor.linkedEditing": true,
+  "editor.snippetSuggestions": "top",
+  "editor.parameterHints.enabled": true,
+  "editor.codeLens": true,
+
+  // 📁 فایل‌ها
+  "files.autoSave": "afterDelay",
+  "files.autoSaveDelay": 1000,
+  "files.trimTrailingWhitespace": true,
+  "files.insertFinalNewline": true,
+  "files.encoding": "utf8",
+  "files.eol": "\n",
+  "files.exclude": {
+    "**/bin": true,
+    "**/obj": true,
+    "**/.vs": true,
+    "**/node_modules": true,
+    "**/.git": false
+  },
+
+  // 🔍 جستجو
+  "search.exclude": {
+    "**/bin": true,
+    "**/obj": true,
+    "**/node_modules": true,
+    "**/.vs": true,
+    "**/dist": true,
+    "**/.vscode": false
+  },
+
+  // 🎯 C# و .NET
+  "dotnet.defaultSolution": "JsonViewer.Blazor.sln",
+  "omnisharp.enableEditorConfigSupport": true,
+  "omnisharp.enableRoslynAnalyzers": true,
+  "omnisharp.useModernNet": true,
+  "csharp.semanticHighlighting.enabled": true,
+  "csharp.format.enable": true,
+  "csharp.suppressDotnetInstallWarning": false,
+
+  // 🔧 Razor و Blazor
+  "[razor]": {
+    "editor.defaultFormatter": "ms-dotnettools.csdevkit",
+    "editor.formatOnSave": true,
+    "editor.tabSize": 4
+  },
+  "[csharp]": {
+    "editor.defaultFormatter": "ms-dotnettools.csharp",
+    "editor.formatOnSave": true,
+    "editor.tabSize": 4,
+    "editor.codeLens": true
+  },
+  "[json]": {
+    "editor.defaultFormatter": "vscode.json-language-features",
+    "editor.tabSize": 2
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "vscode.json-language-features",
+    "editor.tabSize": 2
+  },
+  "[html]": {
+    "editor.defaultFormatter": "vscode.html-language-features",
+    "editor.tabSize": 2
+  },
+  "[css]": {
+    "editor.defaultFormatter": "vscode.css-language-features",
+    "editor.tabSize": 2
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "vscode.typescript-language-features",
+    "editor.tabSize": 2
+  },
+
+  // 🐛 دیباگ
+  "debug.console.fontSize": 13,
+  "debug.console.lineHeight": 20,
+  "debug.internalConsoleOptions": "openOnSessionStart",
+  "debug.openDebug": "openOnDebugBreak",
+
+  // 🧪 تست
+  "dotnet-test-explorer.testProjectPath": "**/*Test*.csproj",
+
+  // 🔐 Git
+  "git.autofetch": true,
+  "git.confirmSync": false,
+  "git.enableSmartCommit": true,
+  "git.suggestSmartCommit": true,
+
+  // 🎨 IntelliSense
+  "editor.acceptSuggestionOnCommitCharacter": true,
+  "editor.acceptSuggestionOnEnter": "on",
+  "editor.quickSuggestionsDelay": 10,
+  "editor.wordBasedSuggestions": "matchingDocuments",
+
+  // ⚡ عملکرد
+  "files.watcherExclude": {
+    "**/bin/**": true,
+    "**/obj/**": true,
+    "**/node_modules/**": true,
+    "**/.git/objects/**": true,
+    "**/.git/subtree-cache/**": true,
+    "**/dist/**": true
+  },
+
+  // 📊 خطاها و هشدارها
+  "problems.decorations.enabled": true,
+  "problems.showCurrentInStatus": true,
+
+  // 🌐 بین‌المللی‌سازی
+  "editor.unicodeHighlight.ambiguousCharacters": false,
+  "editor.unicodeHighlight.invisibleCharacters": false,
+
+  // 🔨 ابزارهای توسعه
+  "explorer.confirmDelete": false,
+  "explorer.confirmDragAndDrop": false,
+  "workbench.startupEditor": "welcomePage",
+  "workbench.editor.enablePreview": false,
+  "workbench.editor.closeEmptyGroups": true,
+
+  // 📝 خط‌کش
+  "editor.rulers": [120, 80],
+
+  // 💡 پیشنهادات هوشمند
+  "editor.suggest.localityBonus": true,
+  "editor.suggest.shareSuggestSelections": true,
+  "editor.suggest.showKeywords": true,
+  "editor.suggest.showSnippets": true,
+
+  // 🎯 هدف‌گذاری خاص برای ASP.NET Core
+  "razor.format.enable": true,
+  "html.format.wrapLineLength": 120,
+  "html.format.wrapAttributes": "auto",
+  "dotnet.completion.showCompletionItemsFromUnimportedNamespaces": true,
+  "dotnet.formatting.organizeImportsOnFormat": true
+}
+

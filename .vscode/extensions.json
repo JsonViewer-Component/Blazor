@@ -1,0 +1,87 @@
+{
+  "recommendations": [
+    // 🎯 ضروری برای ASP.NET Core
+    "ms-dotnettools.csdevkit",
+    "ms-dotnettools.csharp",
+    "ms-dotnettools.vscode-dotnet-runtime",
+
+    // 🔥 Blazor و Razor
+    "ms-dotnettools.blazorwasm-companion",
+
+    // 📝 IntelliSense و کمک‌های کدنویسی
+    "visualstudioexptteam.vscodeintellicode",
+    "visualstudioexptteam.intellicode-api-usage-examples",
+
+    // 🧪 تست
+    "formulahendry.dotnet-test-explorer",
+
+    // 🎨 فرمت‌دهی و زیبایی کد
+    "editorconfig.editorconfig",
+    "streetsidesoftware.code-spell-checker",
+
+    // 🔍 Git و مدیریت نسخه
+    "eamodio.gitlens",
+    "mhutchie.git-graph",
+    "donjayamanne.githistory",
+
+    // 📊 کار با JSON
+    "zainchen.json",
+
+    // 🐳 Docker (برای Containerize کردن)
+    "ms-azuretools.vscode-docker",
+
+    // 📦 NuGet
+    "jmrog.vscode-nuget-package-manager",
+
+    // 🎨 تم‌ها و آیکون‌ها
+    "pkief.material-icon-theme",
+    "github.github-vscode-theme",
+
+    // 🔧 ابزارهای کمکی
+    "wayou.vscode-todo-highlight",
+    "gruntfuggly.todo-tree",
+    "aaron-bond.better-comments",
+    "oderwat.indent-rainbow",
+    "christian-kohler.path-intellisense",
+
+    // 📝 مستندسازی
+    "k--kato.docomment",
+
+    // ⚡ بهبود عملکرد
+    "formulahendry.auto-close-tag",
+    "formulahendry.auto-rename-tag",
+
+    // 🌐 Web Development
+    "ritwickdey.liveserver",
+    "zignd.html-css-class-completion",
+
+    // 🔐 امنیت
+    "sonatype.vscode-nexus-iq",
+
+    // 📊 Code Metrics
+    "kisstkondoros.vscode-codemetrics",
+
+    // 🎯 Snippets مخصوص C# و Blazor
+    "jorgeserrano.vscode-csharp-snippets",
+    "fudge.auto-using",
+
+    // 🔄 REST API Testing
+    "humao.rest-client",
+
+    // 📋 Clipboard History
+    "alefragnani.bookmarks",
+
+    // 🎨 Bracket Colorizer
+    "coenraads.bracket-pair-colorizer-2",
+
+    // 📝 Better C# Syntax
+    "jchannon.csharpextensions",
+
+    // 🔍 Search & Replace Advanced
+    "ryu1kn.partial-diff"
+  ],
+  "unwantedRecommendations": [
+    "ms-vscode.csharp"
+  ]
+}
+

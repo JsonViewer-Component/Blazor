@@ -1,0 +1,144 @@
+﻿@page "/"
+@using Component.Core
+
+<PageTitle>JSON Viewer Demo</PageTitle>
+
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="text-center mb-4">
+                🚀 JSON Viewer Component Demo
+            </h1>
+            <p class="text-center text-muted mb-4">
+                A powerful JSON viewer for Blazor with search, statistics, and more!
+            </p>
+        </div>
+    </div>
+
+            <JsonViewer JsonData="@sampleJson"
+                        IsEditable="true" />
+
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">📚 Sample JSON Templates</h5>
+                </div>
+                <div class="card-body">
+                    <div class="btn-group" role="group">
+                        <button class="btn btn-outline-primary" @onclick="LoadSimpleJson">
+                            Simple Object
+                        </button>
+                        <button class="btn btn-outline-primary" @onclick="LoadNestedJson">
+                            Nested Object
+                        </button>
+                        <button class="btn btn-outline-primary" @onclick="LoadArrayJson">
+                            Array Data
+                        </button>
+                        <button class="btn btn-outline-primary" @onclick="LoadComplexJson">
+                            Complex Data
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private string sampleJson = string.Empty;
+
+    protected override void OnInitialized()
+    {
+        LoadSimpleJson();
+    }
+
+    private void LoadSimpleJson()
+    {
+        sampleJson = @"{
+  ""name"": ""John Doe"",
+  ""age"": 30,
+  ""email"": ""john@example.com"",
+  ""active"": true
+}";
+    }
+
+    private void LoadNestedJson()
+    {
+        sampleJson = @"{
+  ""user"": {
+    ""id"": 1,
+    ""name"": ""Jane Smith"",
+    ""address"": {
+      ""street"": ""123 Main St"",
+      ""city"": ""New York"",
+      ""country"": ""USA""
+    }
+  },
+  ""timestamp"": ""2025-11-19T10:30:00Z""
+}";
+    }
+
+    private void LoadArrayJson()
+    {
+        sampleJson = @"{
+  ""products"": [
+    {
+      ""id"": 1,
+      ""name"": ""Laptop"",
+      ""price"": 999.99
+    },
+    {
+      ""id"": 2,
+      ""name"": ""Mouse"",
+      ""price"": 29.99
+    },
+    {
+      ""id"": 3,
+      ""name"": ""Keyboard"",
+      ""price"": 79.99
+    }
+  ]
+}";
+    }
+
+    private void LoadComplexJson()
+    {
+        sampleJson = @"{
+  ""company"": {
+    ""name"": ""Tech Corp"",
+    ""founded"": 2010,
+    ""employees"": [
+      {
+        ""id"": 1,
+        ""name"": ""Alice"",
+        ""department"": ""Engineering"",
+        ""skills"": [""C#"", ""Blazor"", ""Azure""]
+      },
+      {
+        ""id"": 2,
+        ""name"": ""Bob"",
+        ""department"": ""Marketing"",
+        ""skills"": [""SEO"", ""Content"", ""Analytics""]
+      }
+    ],
+    ""offices"": {
+      ""headquarters"": {
+        ""city"": ""San Francisco"",
+        ""country"": ""USA""
+      },
+      ""branches"": [
+        {
+          ""city"": ""London"",
+          ""country"": ""UK""
+        },
+        {
+          ""city"": ""Tokyo"",
+          ""country"": ""Japan""
+        }
+      ]
+    }
+  }
+}";
+    }
+}

@@ -1,0 +1,173 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      // 🏗️ بیلد کل سولوشن
+      "label": "build-solution",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "build",
+        "${workspaceFolder}/JsonViewer.Blazor.sln",
+        "/property:GenerateFullPaths=true",
+        "/consoleloggerparameters:NoSummary"
+      ],
+      "problemMatcher": "$msCompile",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "presentation": {
+        "reveal": "silent",
+        "panel": "shared"
+      }
+    },
+    {
+      // 🔨 بیلد Component
+      "label": "build-component",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "build",
+        "${workspaceFolder}/src/Component/Component.csproj",
+        "/property:GenerateFullPaths=true",
+        "/consoleloggerparameters:NoSummary"
+      ],
+      "problemMatcher": "$msCompile",
+      "group": "build"
+    },
+    {
+      // 🌐 بیلد Blazor Demo
+      "label": "build-blazor-demo",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "build",
+        "${workspaceFolder}/src/Blazor.Demo/Blazor.Demo.csproj",
+        "/property:GenerateFullPaths=true",
+        "/consoleloggerparameters:NoSummary"
+      ],
+      "problemMatcher": "$msCompile",
+      "group": "build"
+    },
+    {
+      // 🔥 Watch Mode (Hot Reload)
+      "label": "watch-demo",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "watch",
+        "run",
+        "--project",
+        "${workspaceFolder}/src/JsonViewerComponentTest.Demo/JsonViewerComponentTest.Demo.csproj"
+      ],
+      "problemMatcher": "$msCompile",
+      "isBackground": true,
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      }
+    },
+    {
+      // 🧹 پاک‌سازی
+      "label": "clean",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "clean",
+        "${workspaceFolder}/JsonViewer.Blazor.sln",
+        "/property:GenerateFullPaths=true",
+        "/consoleloggerparameters:NoSummary"
+      ],
+      "problemMatcher": "$msCompile",
+      "group": "build"
+    },
+    {
+      // 🔄 Restore پکیج‌ها
+      "label": "restore",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "restore",
+        "${workspaceFolder}/JsonViewer.Blazor.sln"
+      ],
+      "problemMatcher": [],
+      "group": "build"
+    },
+    {
+      // 📦 ساخت NuGet Package
+      "label": "pack-component",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "pack",
+        "${workspaceFolder}/src/Component/Component.csproj",
+        "-c",
+        "Release",
+        "-o",
+        "${workspaceFolder}/packages"
+      ],
+      "problemMatcher": "$msCompile",
+      "group": "build",
+      "dependsOn": ["build-component"]
+    },
+    {
+      // 🧪 اجرای تست‌ها
+      "label": "test",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "test",
+        "${workspaceFolder}/JsonViewer.Blazor.sln",
+        "--no-build",
+        "--verbosity",
+        "normal"
+      ],
+      "problemMatcher": "$msCompile",
+      "group": "test"
+    },
+    {
+      // 🔍 Format کد
+      "label": "format",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "format",
+        "${workspaceFolder}/JsonViewer.Blazor.sln"
+      ],
+      "problemMatcher": [],
+      "group": "none"
+    },
+    {
+      // 🚀 اجرای سریع Demo
+      "label": "run-demo",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "run",
+        "--project",
+        "${workspaceFolder}/src/JsonViewerComponentTest.Demo/JsonViewerComponentTest.Demo.csproj"
+      ],
+      "problemMatcher": "$msCompile",
+      "group": "none",
+      "isBackground": true,
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      }
+    },
+    {
+      // 🔥 Clean + Restore + Build
+      "label": "rebuild",
+      "dependsOn": [
+        "clean",
+        "restore",
+        "build-solution"
+      ],
+      "dependsOrder": "sequence",
+      "problemMatcher": [],
+      "group": "build"
+    }
+  ]
+}
+

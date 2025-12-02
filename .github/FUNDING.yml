@@ -1,0 +1,9 @@
+# These are supported funding model platforms
+
+github: [parsapanahpoor]
+patreon: jsonviewerblazor
+open_collective: jsonviewer
+ko_fi: jsonviewerblazor
+tidelift: "nuget/JsonViewer.Blazor"
+custom: ["https://jsonviewer-component.com/sponsor", "https://buymeacoffee.com/parsapanahpoor"]
+

@@ -1,0 +1,12 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 💬 Discussions
+    url: https://github.com/JsonViewer-Component/Blazor/discussions
+    about: Ask questions and discuss ideas with the community
+  - name: 📖 Documentation
+    url: https://jsonviewer-component.github.io/Blazor/
+    about: Read the documentation for help and guidance
+  - name: 💡 Stack Overflow
+    url: https://stackoverflow.com/questions/tagged/jsonviewer-blazor
+    about: Ask questions on Stack Overflow with the tag 'jsonviewer-blazor'
+

@@ -1,0 +1,82 @@
+name: ❓ Question
+description: Ask a question about using JsonViewer.Blazor
+title: "[QUESTION] "
+labels: ["question", "help wanted"]
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for asking a question! Please provide as much context as possible.
+
+        **Note:** For general discussions, consider using [GitHub Discussions](https://github.com/JsonViewer-Component/Blazor/discussions) instead.
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Prerequisites
+      description: Please confirm the following before asking
+      options:
+        - label: I have read the documentation
+          required: true
+        - label: I have searched existing issues and discussions
+          required: true
+        - label: This is not a bug report (use Bug Report template instead)
+          required: true
+
+  - type: textarea
+    id: question
+    attributes:
+      label: Question
+      description: What would you like to know?
+      placeholder: How do I...?
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+      description: Provide context about what you're trying to achieve
+      placeholder: I'm trying to...
+
+  - type: textarea
+    id: attempted
+    attributes:
+      label: What Have You Tried?
+      description: Describe what you've already attempted
+      placeholder: I have tried...
+
+  - type: textarea
+    id: code
+    attributes:
+      label: Code Sample
+      description: Provide relevant code if applicable
+      render: csharp
+      placeholder: |
+        @code {
+            // Your code here
+        }
+
+  - type: dropdown
+    id: urgency
+    attributes:
+      label: Urgency
+      description: How urgent is this question?
+      options:
+        - Not urgent - Just curious
+        - Low - Can wait
+        - Medium - Need answer soon
+        - High - Blocking my work
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Code of Conduct
+      description: By submitting this question, you agree to follow our Code of Conduct
+      options:
+        - label: I agree to follow this project's Code of Conduct
+          required: true
+

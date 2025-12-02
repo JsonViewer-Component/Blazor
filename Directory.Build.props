@@ -1,0 +1,51 @@
+<Project>
+  <!-- 🎯 تنظیمات مشترک برای تمام پروژه‌ها -->
+
+  <PropertyGroup>
+    <!-- زبان و نسخه -->
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+
+    <!-- کیفیت کد -->
+    <AnalysisLevel>latest</AnalysisLevel>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <AnalysisMode>All</AnalysisMode>
+
+    <!-- تنظیمات Build -->
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591;CS1573</NoWarn>
+
+    <!-- Source Link - برای دیباگ بهتر -->
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+
+    <!-- Deterministic Build -->
+    <Deterministic>true</Deterministic>
+    <ContinuousIntegrationBuild Condition="'$(CI)' == 'true'">true</ContinuousIntegrationBuild>
+  </PropertyGroup>
+
+  <!-- 📦 پکیج‌های مشترک برای همه پروژه‌ها -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All"/>
+  </ItemGroup>
+
+  <!-- 🎨 تنظیمات مخصوص Blazor -->
+  <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.csproj' And $(MSBuildProjectFile.Contains('Blazor'))">
+    <BlazorEnableCompression>true</BlazorEnableCompression>
+    <BlazorWebAssemblyLoadAllGlobalizationData>false</BlazorWebAssemblyLoadAllGlobalizationData>
+  </PropertyGroup>
+
+  <!-- 📝 تنظیمات مخصوص Component Library -->
+  <PropertyGroup Condition="'$(MSBuildProjectName)' == 'Component'">
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <IncludeSymbols>true</IncludeSymbols>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+  </PropertyGroup>
+
+</Project>
+

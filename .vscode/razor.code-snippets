@@ -1,0 +1,139 @@
+{
+  // 🎯 Snippets مخصوص Razor و Blazor
+
+  "Razor If Statement": {
+    "prefix": "rif",
+    "body": [
+      "@if (${1:condition})",
+      "{",
+      "    ${2:// Content}",
+      "}"
+    ],
+    "description": "If statement در Razor"
+  },
+
+  "Razor For Loop": {
+    "prefix": "rfor",
+    "body": [
+      "@for (int i = 0; i < ${1:count}; i++)",
+      "{",
+      "    ${2:// Content}",
+      "}"
+    ],
+    "description": "For loop در Razor"
+  },
+
+  "Razor Foreach": {
+    "prefix": "rforeach",
+    "body": [
+      "@foreach (var ${1:item} in ${2:collection})",
+      "{",
+      "    ${3:// Content}",
+      "}"
+    ],
+    "description": "Foreach loop در Razor"
+  },
+
+  "Razor Section": {
+    "prefix": "rsection",
+    "body": [
+      "@section ${1:SectionName}",
+      "{",
+      "    ${2:// Content}",
+      "}"
+    ],
+    "description": "تعریف Section در Razor"
+  },
+
+  "Razor Using": {
+    "prefix": "rusing",
+    "body": [
+      "@using ${1:Namespace}"
+    ],
+    "description": "Using در Razor"
+  },
+
+  "Loading State": {
+    "prefix": "loading",
+    "body": [
+      "@if (${1:isLoading})",
+      "{",
+      "    <div class=\"spinner-border\" role=\"status\">",
+      "        <span class=\"visually-hidden\">Loading...</span>",
+      "    </div>",
+      "}",
+      "else",
+      "{",
+      "    ${2:// Content}",
+      "}"
+    ],
+    "description": "Loading state در Blazor"
+  },
+
+  "Bootstrap Card": {
+    "prefix": "bs-card",
+    "body": [
+      "<div class=\"card\">",
+      "    <div class=\"card-header\">",
+      "        ${1:Header}",
+      "    </div>",
+      "    <div class=\"card-body\">",
+      "        ${2:Content}",
+      "    </div>",
+      "</div>"
+    ],
+    "description": "Bootstrap Card"
+  },
+
+  "Bootstrap Modal": {
+    "prefix": "bs-modal",
+    "body": [
+      "<div class=\"modal fade\" id=\"${1:modalId}\" tabindex=\"-1\">",
+      "    <div class=\"modal-dialog\">",
+      "        <div class=\"modal-content\">",
+      "            <div class=\"modal-header\">",
+      "                <h5 class=\"modal-title\">${2:Title}</h5>",
+      "                <button type=\"button\" class=\"btn-close\" data-bs-dismiss=\"modal\"></button>",
+      "            </div>",
+      "            <div class=\"modal-body\">",
+      "                ${3:Content}",
+      "            </div>",
+      "            <div class=\"modal-footer\">",
+      "                <button type=\"button\" class=\"btn btn-secondary\" data-bs-dismiss=\"modal\">Close</button>",
+      "                <button type=\"button\" class=\"btn btn-primary\">Save</button>",
+      "            </div>",
+      "        </div>",
+      "    </div>",
+      "</div>"
+    ],
+    "description": "Bootstrap Modal"
+  },
+
+  "EditForm": {
+    "prefix": "editform",
+    "body": [
+      "<EditForm Model=\"@${1:model}\" OnValidSubmit=\"@${2:HandleSubmit}\">",
+      "    <DataAnnotationsValidator />",
+      "    <ValidationSummary />",
+      "    ",
+      "    ${3:// Form fields}",
+      "    ",
+      "    <button type=\"submit\" class=\"btn btn-primary\">Submit</button>",
+      "</EditForm>"
+    ],
+    "description": "EditForm با Validation"
+  },
+
+  "Input Text": {
+    "prefix": "input-text",
+    "body": [
+      "<div class=\"mb-3\">",
+      "    <label for=\"${1:fieldId}\" class=\"form-label\">${2:Label}</label>",
+      "    <InputText id=\"${1:fieldId}\" class=\"form-control\" @bind-Value=\"${3:model}.${4:Property}\" />",
+      "    <ValidationMessage For=\"@(() => ${3:model}.${4:Property})\" />",
+      "</div>"
+    ],
+    "description": "Input Text با Validation"
+  }
+}
+

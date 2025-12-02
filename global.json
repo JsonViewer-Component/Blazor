@@ -1,0 +1,11 @@
+{
+  "sdk": {
+    "version": "7.0.0",
+    "rollForward": "latestFeature",
+    "allowPrerelease": false
+  },
+  "msbuild-sdks": {
+    "Microsoft.Build.NoTargets": "3.7.0"
+  }
+}
+

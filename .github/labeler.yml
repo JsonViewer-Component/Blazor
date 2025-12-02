@@ -1,0 +1,48 @@
+# Add labels to pull requests based on file changes
+
+'component':
+  - changed-files:
+    - any-glob-to-any-file: 'src/Component/**/*'
+
+'demo':
+  - changed-files:
+    - any-glob-to-any-file: 'src/Blazor.Demo/**/*'
+
+'documentation':
+  - changed-files:
+    - any-glob-to-any-file:
+      - '*.md'
+      - 'Documents/**/*'
+      - '.github/**/*.md'
+
+'ci/cd':
+  - changed-files:
+    - any-glob-to-any-file:
+      - '.github/workflows/**/*'
+      - '.github/actions/**/*'
+
+'dependencies':
+  - changed-files:
+    - any-glob-to-any-file:
+      - '**/packages.lock.json'
+      - '**/*.csproj'
+      - 'global.json'
+      - 'Directory.Build.props'
+
+'tests':
+  - changed-files:
+    - any-glob-to-any-file: '**/*Tests/**/*'
+
+'docker':
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'Dockerfile'
+      - 'docker-compose.yml'
+      - '.dockerignore'
+
+'security':
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'SECURITY.md'
+      - '.github/workflows/codeql.yml'
+

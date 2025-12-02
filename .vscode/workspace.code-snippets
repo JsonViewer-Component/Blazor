@@ -1,0 +1,87 @@
+{
+  // 🎯 Snippets عمومی برای Workspace
+
+  "Region": {
+    "prefix": "region",
+    "body": [
+      "#region ${1:RegionName}",
+      "${2:// Code}",
+      "#endregion"
+    ],
+    "description": "ایجاد یک Region"
+  },
+
+  "TODO Comment": {
+    "prefix": "todo",
+    "body": [
+      "// TODO: ${1:Description}"
+    ],
+    "description": "کامنت TODO"
+  },
+
+  "FIXME Comment": {
+    "prefix": "fixme",
+    "body": [
+      "// FIXME: ${1:Description}"
+    ],
+    "description": "کامنت FIXME"
+  },
+
+  "NOTE Comment": {
+    "prefix": "note",
+    "body": [
+      "// NOTE: ${1:Description}"
+    ],
+    "description": "کامنت NOTE"
+  },
+
+  "XML Documentation": {
+    "prefix": "doc",
+    "body": [
+      "/// <summary>",
+      "/// ${1:Description}",
+      "/// </summary>",
+      "${2:/// <param name=\"paramName\">Parameter description</param>}",
+      "${3:/// <returns>Return value description</returns>}"
+    ],
+    "description": "مستندسازی XML"
+  },
+
+  "Constructor": {
+    "prefix": "ctor",
+    "body": [
+      "public ${1:ClassName}(${2:parameters})",
+      "{",
+      "    ${3:// Implementation}",
+      "}"
+    ],
+    "description": "Constructor"
+  },
+
+  "Property with backing field": {
+    "prefix": "propf",
+    "body": [
+      "private ${1:type} _${2:fieldName};",
+      "",
+      "public ${1:type} ${3:PropertyName}",
+      "{",
+      "    get => _${2:fieldName};",
+      "    set => _${2:fieldName} = value;",
+      "}"
+    ],
+    "description": "Property با backing field"
+  },
+
+  "Async Method": {
+    "prefix": "async",
+    "body": [
+      "public async Task<${1:Result}> ${2:MethodName}Async(${3:parameters})",
+      "{",
+      "    ${4:// Implementation}",
+      "    await Task.CompletedTask;",
+      "}"
+    ],
+    "description": "Async Method"
+  }
+}
+

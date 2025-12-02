@@ -1,0 +1,71 @@
+name: 🏗️ Build & Test
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+env:
+  DOTNET_VERSION: '7.0.x'
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+  DOTNET_NOLOGO: true
+
+jobs:
+  build:
+    name: 🔨 Build
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: 📥 Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # برای GitVersion
+
+    - name: ⚙️ Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+
+    - name: 📦 Restore dependencies
+      run: dotnet restore JsonViewer.Blazor.sln
+
+    - name: 🏗️ Build
+      run: dotnet build JsonViewer.Blazor.sln --no-restore --configuration Release
+
+    - name: 🧪 Test
+      run: dotnet test JsonViewer.Blazor.sln --no-build --configuration Release --verbosity normal
+
+    - name: 📊 Code Coverage
+      run: |
+        dotnet test JsonViewer.Blazor.sln \
+          --no-build \
+          --configuration Release \
+          --collect:"XPlat Code Coverage" \
+          --results-directory ./coverage
+
+    - name: 📤 Upload Coverage
+      uses: codecov/codecov-action@v3
+      with:
+        directory: ./coverage
+        fail_ci_if_error: false
+
+  analyze:
+    name: 🔍 Code Analysis
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: 📥 Checkout
+      uses: actions/checkout@v4
+
+    - name: ⚙️ Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+
+    - name: 🔍 Format Check
+      run: dotnet format JsonViewer.Blazor.sln --verify-no-changes --no-restore
+
+    - name: 📊 Code Analysis
+      run: dotnet build JsonViewer.Blazor.sln -warnaserror
+

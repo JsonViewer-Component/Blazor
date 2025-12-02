@@ -1,0 +1,77 @@
+name: 🚀 Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+env:
+  DOTNET_VERSION: '7.0.x'
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+  DOTNET_NOLOGO: true
+
+jobs:
+  build:
+    name: 🏗️ Build Blazor WASM
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: 📥 Checkout
+      uses: actions/checkout@v4
+
+    - name: ⚙️ Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+
+    - name: 📦 Restore dependencies
+      run: dotnet restore JsonViewer.Blazor.sln
+
+    - name: 🏗️ Build
+      run: dotnet build JsonViewer.Blazor.sln --configuration Release --no-restore
+
+    - name: 📦 Publish Blazor WASM
+      run: |
+        dotnet publish src/Blazor.Demo/Blazor.Demo.csproj \
+          -c Release \
+          -o release \
+          --nologo
+
+    - name: 🔧 Configure base path
+      run: |
+        sed -i 's/<base href="\/" \/>/<base href="\/Blazor\/" \/>/g' release/wwwroot/index.html
+
+    - name: 📝 Add .nojekyll file
+      run: touch release/wwwroot/.nojekyll
+
+    - name: 📝 Add custom 404.html
+      run: cp release/wwwroot/index.html release/wwwroot/404.html
+
+    - name: 📤 Upload artifact
+      uses: actions/upload-pages-artifact@v3
+      with:
+        path: release/wwwroot
+
+  deploy:
+    name: 🚀 Deploy to GitHub Pages
+    needs: build
+    runs-on: ubuntu-latest
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+    - name: 🌐 Deploy to GitHub Pages
+      id: deployment
+      uses: actions/deploy-pages@v4
+

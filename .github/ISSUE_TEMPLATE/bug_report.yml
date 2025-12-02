@@ -1,0 +1,158 @@
+name: 🐛 Bug Report
+description: Report a bug or unexpected behavior
+title: "[BUG] "
+labels: ["bug", "triage"]
+assignees:
+  - parsapanahpoor
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report! Please provide as much detail as possible.
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Prerequisites
+      description: Please confirm the following before submitting
+      options:
+        - label: I have searched existing issues to avoid duplicates
+          required: true
+        - label: I am using the latest version of JsonViewer.Blazor
+          required: true
+        - label: I have read the documentation
+          required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Package Version
+      description: Which version of JsonViewer.Blazor are you using?
+      placeholder: e.g., 0.0.2-beta
+    validations:
+      required: true
+
+  - type: dropdown
+    id: dotnet-version
+    attributes:
+      label: .NET Version
+      description: Which .NET version are you targeting?
+      options:
+        - .NET 6.0
+        - .NET 7.0
+        - .NET 8.0
+        - .NET 9.0
+    validations:
+      required: true
+
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform
+      description: Which platform are you using?
+      options:
+        - Blazor WebAssembly
+        - Blazor Server
+        - Blazor Hybrid (MAUI)
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug Description
+      description: A clear and concise description of the bug
+      placeholder: Describe what happened and what you expected to happen
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to Reproduce
+      description: Detailed steps to reproduce the behavior
+      placeholder: |
+        1. Go to '...'
+        2. Click on '....'
+        3. Scroll down to '....'
+        4. See error
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: What did you expect to happen?
+      placeholder: Describe the expected behavior
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual Behavior
+      description: What actually happened?
+      placeholder: Describe what actually happened
+    validations:
+      required: true
+
+  - type: textarea
+    id: code
+    attributes:
+      label: Code Sample
+      description: Please provide a minimal code sample that reproduces the issue
+      render: csharp
+      placeholder: |
+        @page "/demo"
+        <JsonViewer JsonData="@jsonData" />
+
+        @code {
+            private string jsonData = "...";
+        }
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots / Videos
+      description: If applicable, add screenshots or videos to help explain the problem
+      placeholder: Drag and drop images/videos here
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Please provide your environment details
+      value: |
+        - OS: [e.g., Windows 11, macOS 13, Ubuntu 22.04]
+        - Browser: [e.g., Chrome 120, Firefox 121, Edge 120]
+        - IDE: [e.g., Visual Studio 2022, VS Code, Rider]
+        - JsonViewer.Blazor Version: [e.g., 0.0.2-beta]
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Error Logs / Stack Trace
+      description: Please provide any relevant error messages or stack traces
+      render: shell
+      placeholder: Paste error logs here
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Context
+      description: Add any other context about the problem here
+      placeholder: Any additional information that might help
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Code of Conduct
+      description: By submitting this issue, you agree to follow our Code of Conduct
+      options:
+        - label: I agree to follow this project's Code of Conduct
+          required: true
+

@@ -1,0 +1,252 @@
+{
+  // 🎯 Snippets مخصوص C# و ASP.NET Core
+
+  "Blazor Component": {
+    "prefix": "blazor-component",
+    "body": [
+      "@page \"/${1:route}\"",
+      "",
+      "<h3>${2:ComponentName}</h3>",
+      "",
+      "@code {",
+      "    ${3:// Component logic}",
+      "}"
+    ],
+    "description": "ایجاد یک Blazor Component کامل"
+  },
+
+  "Blazor Component with Parameter": {
+    "prefix": "blazor-param",
+    "body": [
+      "@code {",
+      "    [Parameter]",
+      "    public ${1:string} ${2:PropertyName} { get; set; } = ${3:default};",
+      "}"
+    ],
+    "description": "اضافه کردن Parameter به Component"
+  },
+
+  "Blazor EventCallback": {
+    "prefix": "blazor-event",
+    "body": [
+      "[Parameter]",
+      "public EventCallback<${1:string}> ${2:EventName} { get; set; }",
+      "",
+      "private async Task Handle${2:EventName}()",
+      "{",
+      "    await ${2:EventName}.InvokeAsync(${3:value});",
+      "}"
+    ],
+    "description": "ایجاد EventCallback در Component"
+  },
+
+  "API Controller": {
+    "prefix": "api-controller",
+    "body": [
+      "using Microsoft.AspNetCore.Mvc;",
+      "",
+      "namespace ${1:Namespace}.Controllers;",
+      "",
+      "[ApiController]",
+      "[Route(\"api/[controller]\")]",
+      "public class ${2:Name}Controller : ControllerBase",
+      "{",
+      "    private readonly ILogger<${2:Name}Controller> _logger;",
+      "",
+      "    public ${2:Name}Controller(ILogger<${2:Name}Controller> logger)",
+      "    {",
+      "        _logger = logger;",
+      "    }",
+      "",
+      "    [HttpGet]",
+      "    public async Task<ActionResult<IEnumerable<${3:Model}>>> Get()",
+      "    {",
+      "        ${4:// Implementation}",
+      "        return Ok();",
+      "    }",
+      "}"
+    ],
+    "description": "ایجاد یک API Controller کامل"
+  },
+
+  "Service Interface": {
+    "prefix": "service-interface",
+    "body": [
+      "namespace ${1:Namespace}.Services;",
+      "",
+      "public interface I${2:ServiceName}",
+      "{",
+      "    Task<${3:Result}> ${4:MethodName}Async(${5:parameters});",
+      "}"
+    ],
+    "description": "ایجاد Interface برای Service"
+  },
+
+  "Service Implementation": {
+    "prefix": "service-impl",
+    "body": [
+      "using ${1:Namespace}.Services;",
+      "",
+      "namespace ${1:Namespace}.Services;",
+      "",
+      "public class ${2:ServiceName} : I${2:ServiceName}",
+      "{",
+      "    private readonly ILogger<${2:ServiceName}> _logger;",
+      "",
+      "    public ${2:ServiceName}(ILogger<${2:ServiceName}> logger)",
+      "    {",
+      "        _logger = logger;",
+      "    }",
+      "",
+      "    public async Task<${3:Result}> ${4:MethodName}Async(${5:parameters})",
+      "    {",
+      "        ${6:// Implementation}",
+      "        throw new NotImplementedException();",
+      "    }",
+      "}"
+    ],
+    "description": "پیاده‌سازی یک Service"
+  },
+
+  "Entity Model": {
+    "prefix": "entity",
+    "body": [
+      "namespace ${1:Namespace}.Models;",
+      "",
+      "public class ${2:EntityName}",
+      "{",
+      "    public int Id { get; set; }",
+      "    ${3:// Properties}",
+      "    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;",
+      "    public DateTime? UpdatedAt { get; set; }",
+      "}"
+    ],
+    "description": "ایجاد یک Entity Model"
+  },
+
+  "DTO Model": {
+    "prefix": "dto",
+    "body": [
+      "namespace ${1:Namespace}.DTOs;",
+      "",
+      "public record ${2:DtoName}",
+      "{",
+      "    ${3:// Properties}",
+      "};"
+    ],
+    "description": "ایجاد یک DTO با record"
+  },
+
+  "Repository Interface": {
+    "prefix": "repo-interface",
+    "body": [
+      "namespace ${1:Namespace}.Repositories;",
+      "",
+      "public interface I${2:Entity}Repository",
+      "{",
+      "    Task<${2:Entity}?> GetByIdAsync(int id);",
+      "    Task<IEnumerable<${2:Entity}>> GetAllAsync();",
+      "    Task<${2:Entity}> AddAsync(${2:Entity} entity);",
+      "    Task UpdateAsync(${2:Entity} entity);",
+      "    Task DeleteAsync(int id);",
+      "}"
+    ],
+    "description": "ایجاد Repository Interface"
+  },
+
+  "XUnit Test": {
+    "prefix": "xunit-test",
+    "body": [
+      "[Fact]",
+      "public async Task ${1:TestName}_${2:Scenario}_${3:ExpectedResult}()",
+      "{",
+      "    // Arrange",
+      "    ${4:// Setup}",
+      "",
+      "    // Act",
+      "    ${5:// Execute}",
+      "",
+      "    // Assert",
+      "    ${6:// Verify}",
+      "}"
+    ],
+    "description": "ایجاد یک Unit Test با XUnit"
+  },
+
+  "Try-Catch with Logging": {
+    "prefix": "try-log",
+    "body": [
+      "try",
+      "{",
+      "    ${1:// Code}",
+      "}",
+      "catch (Exception ex)",
+      "{",
+      "    _logger.LogError(ex, \"${2:Error message}\");",
+      "    ${3:throw;}",
+      "}"
+    ],
+    "description": "Try-Catch با Logging"
+  },
+
+  "Inject Service": {
+    "prefix": "inject",
+    "body": [
+      "@inject ${1:IServiceName} ${2:serviceName}"
+    ],
+    "description": "Inject کردن Service در Blazor"
+  },
+
+  "Middleware": {
+    "prefix": "middleware",
+    "body": [
+      "namespace ${1:Namespace}.Middleware;",
+      "",
+      "public class ${2:MiddlewareName}",
+      "{",
+      "    private readonly RequestDelegate _next;",
+      "    private readonly ILogger<${2:MiddlewareName}> _logger;",
+      "",
+      "    public ${2:MiddlewareName}(RequestDelegate next, ILogger<${2:MiddlewareName}> logger)",
+      "    {",
+      "        _next = next;",
+      "        _logger = logger;",
+      "    }",
+      "",
+      "    public async Task InvokeAsync(HttpContext context)",
+      "    {",
+      "        ${3:// Before}",
+      "        ",
+      "        await _next(context);",
+      "        ",
+      "        ${4:// After}",
+      "    }",
+      "}",
+      "",
+      "public static class ${2:MiddlewareName}Extensions",
+      "{",
+      "    public static IApplicationBuilder Use${2:MiddlewareName}(this IApplicationBuilder builder)",
+      "    {",
+      "        return builder.UseMiddleware<${2:MiddlewareName}>();",
+      "    }",
+      "}"
+    ],
+    "description": "ایجاد یک Middleware کامل"
+  },
+
+  "Configuration Options": {
+    "prefix": "options",
+    "body": [
+      "namespace ${1:Namespace}.Options;",
+      "",
+      "public class ${2:OptionName}Options",
+      "{",
+      "    public const string SectionName = \"${2:OptionName}\";",
+      "    ",
+      "    ${3:// Properties}",
+      "}"
+    ],
+    "description": "ایجاد Configuration Options Class"
+  }
+}
+
