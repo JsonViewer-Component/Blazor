@@ -1,25 +1,6 @@
 ﻿@using Component.Core.Shared
 @using Component.Services
-@inject IOptimizedFileDownloadService FileDownloadService
-
-<button @onclick="HandleExportClick"
-        class="@ButtonClass"
-        title="@Title"
-        disabled="@IsDisabled">
-    <Icon Name="@IconName" />
-    @if (!string.IsNullOrEmpty(ButtonText))
-    {
-        <span class="ms-1">@ButtonText</span>
-    }
-    @if (isExporting)
-    {
-        <span class="spinner-border spinner-border-sm ms-1" role="status">
-            <span class="visually-hidden">Exporting...</span>
-        </span>
-    }
-</button>
-
-@using Component.Services
+@using System.Text
 @using System.Text.Json.Nodes
 @using System.Text.Json
 @inject IOptimizedFileDownloadService FileDownloadService
@@ -45,25 +26,25 @@
     #region Parameters
 
     /// <summary>
-    /// JsonNode از JsonViewer (System.Text.Json)
+    /// JsonNode from JsonViewer (System.Text.Json)
     /// </summary>
     [Parameter]
     public JsonNode? JsonToken { get; set; }
 
     /// <summary>
-    /// JSON Data به صورت String
+    /// JSON Data as String
     /// </summary>
     [Parameter]
     public string? JsonData { get; set; }
 
     /// <summary>
-    /// پیشوند نام فایل
+    /// File name prefix
     /// </summary>
     [Parameter]
     public string FileNamePrefix { get; set; } = "json_export";
 
     /// <summary>
-    /// رویداد اطلاع‌رسانی
+    /// Notification event
     /// </summary>
     [Parameter]
     public EventCallback<(string message, string type)> OnNotification { get; set; }
@@ -73,25 +54,25 @@
     #region UI Customization
 
     /// <summary>
-    /// عنوان Tooltip دکمه
+    /// Button tooltip title
     /// </summary>
     [Parameter]
     public string Title { get; set; } = "Export to file";
 
     /// <summary>
-    /// کلاس‌های CSS دکمه
+    /// Button CSS classes
     /// </summary>
     [Parameter]
     public string ButtonClass { get; set; } = "btn btn-sm btn-light mb-2";
 
     /// <summary>
-    /// نام آیکون
+    /// Icon name
     /// </summary>
     [Parameter]
     public string IconName { get; set; } = "download";
 
     /// <summary>
-    /// متن اختیاری کنار آیکون
+    /// Optional text next to icon
     /// </summary>
     [Parameter]
     public string ButtonText { get; set; } = string.Empty;
@@ -104,7 +85,7 @@
     private const int LARGE_FILE_THRESHOLD = 5 * 1024 * 1024;
 
     /// <summary>
-    /// وضعیت فعال/غیرفعال دکمه
+    /// Button enabled/disabled state
     /// </summary>
     private bool IsDisabled => (JsonToken == null && string.IsNullOrEmpty(JsonData)) || isExporting;
 
@@ -113,11 +94,11 @@
     #region Main Methods
 
     /// <summary>
-    /// مدیریت کلیک دکمه Export
+    /// Handle Export button click
     /// </summary>
     private async Task HandleExportClick()
     {
-        // بررسی داده‌های خالی
+        // Check for empty data
         if (JsonToken == null && string.IsNullOrEmpty(JsonData))
             return;
 
@@ -126,13 +107,13 @@
 
         try
         {
-            // دریافت محتوا و فایل‌نیم
+            // Get content and filename
             var content = GetExportContent();
             var fileName = GetExportFileName();
             var fullFileName = $"{fileName}.json";
             var contentSize = Encoding.UTF8.GetByteCount(content);
 
-            // تشخیص خودکار برای فایل‌های بزرگ
+            // Auto-detect for large files
             if (contentSize > LARGE_FILE_THRESHOLD)
             {
                 await FileDownloadService.DownloadLargeFileAsync(
@@ -151,7 +132,7 @@
                 );
             }
 
-            // اطلاع‌رسانی موفقیت
+            // Success notification
             await SendNotification(
                 $"File '{fullFileName}' ({FormatBytes(contentSize)}) exported successfully",
                 "success"
@@ -159,7 +140,7 @@
         }
         catch (Exception ex)
         {
-            // اطلاع‌رسانی خطا
+            // Error notification
             await SendNotification(
                 $"Failed to export: {ex.Message}",
                 "error"
@@ -179,13 +160,13 @@
     #region Helper Methods
 
     /// <summary>
-    /// دریافت محتوای JSON فرمت‌شده برای Export
+    /// Get formatted JSON content for export
     /// </summary>
     private string GetExportContent()
     {
         if (JsonToken != null)
         {
-            // ✅ استفاده از System.Text.Json
+            // Use System.Text.Json
             var options = new JsonSerializerOptions
             {
                 WriteIndented = true
@@ -198,7 +179,7 @@
     }
 
     /// <summary>
-    /// تولید نام فایل با Timestamp
+    /// Generate filename with timestamp
     /// </summary>
     private string GetExportFileName()
     {
@@ -207,7 +188,7 @@
     }
 
     /// <summary>
-    /// ارسال پیام اطلاع‌رسانی به Parent Component
+    /// Send notification message to parent component
     /// </summary>
     private async Task SendNotification(string message, string type)
     {
@@ -218,7 +199,7 @@
     }
 
     /// <summary>
-    /// تبدیل Bytes به فرمت خوانا
+    /// Convert bytes to readable format
     /// </summary>
     private string FormatBytes(long bytes)
     {
