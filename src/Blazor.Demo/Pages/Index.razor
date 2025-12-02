@@ -1,13 +1,12 @@
 ﻿@page "/"
-@using Component.Core
 
-<PageTitle>JSON Viewer Demo</PageTitle>
+<PageTitle>JSON Viewer Component - Demo</PageTitle>
 
 <div class="container-fluid mt-4">
     <div class="row">
         <div class="col-12">
             <h1 class="text-center mb-4">
-                🚀 JSON Viewer Component Demo
+                🚀 JSON Viewer Component
             </h1>
             <p class="text-center text-muted mb-4">
                 A powerful JSON viewer for Blazor with search, statistics, and more!
@@ -15,8 +14,11 @@
         </div>
     </div>
 
-            <JsonViewer JsonData="@sampleJson"
-                        IsEditable="true" />
+    <div class="row">
+        <div class="col-12">
+            <JsonViewer JsonData="@sampleJson" IsEditable="true" />
+        </div>
+    </div>
 
     <div class="row mt-4">
         <div class="col-12">
