@@ -11,7 +11,7 @@ on:
 
 jobs:
   analyze:
-    name: 🔍 Analyze ${{ matrix.language }}
+    name: 🔍 Analyze C#
     runs-on: ubuntu-latest
 
     permissions:
@@ -20,17 +20,11 @@ jobs:
       security-events: write
       packages: read
 
-    strategy:
-      fail-fast: false
-      matrix:
-        language: [ 'csharp', 'javascript' ]
-
     steps:
     - name: 📥 Checkout repository
       uses: actions/checkout@v4
 
     - name: 🔧 Setup .NET
-      if: matrix.language == 'csharp'
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: '7.0.x'
@@ -38,11 +32,10 @@ jobs:
     - name: ⚙️ Initialize CodeQL
       uses: github/codeql-action/init@v3
       with:
-        languages: ${{ matrix.language }}
+        languages: csharp
         queries: security-extended,security-and-quality
 
-    - name: 🏗️ Build C# Projects
-      if: matrix.language == 'csharp'
+    - name: 🏗️ Build Projects
       run: |
         echo "📦 Restoring dependencies..."
         dotnet restore JsonViewer.Blazor.sln
@@ -55,11 +48,7 @@ jobs:
 
         echo "✅ Build completed"
 
-    - name: 🏗️ Autobuild JavaScript
-      if: matrix.language == 'javascript'
-      uses: github/codeql-action/autobuild@v3
-
     - name: 🔍 Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v3
       with:
-        category: "/language:${{ matrix.language }}"
+        category: "/language:csharp"
