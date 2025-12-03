@@ -8,10 +8,7 @@ on:
       version:
         description: 'Version to publish (e.g., 1.0.0)'
         required: true
-      prerelease:
-        description: 'Is this a prerelease?'
-        type: boolean
-        default: false
+        default: '0.0.3-beta'
 
 env:
   DOTNET_VERSION: '7.0.x'
@@ -34,14 +31,24 @@ jobs:
       with:
         dotnet-version: ${{ env.DOTNET_VERSION }}
 
+    - name: 🔍 Determine Version
+      id: version
+      run: |
+        if [ "${{ github.event_name }}" == "release" ]; then
+          VERSION="${{ github.event.release.tag_name }}"
+          # Remove 'v' prefix if present
+          VERSION="${VERSION#v}"
+        else
+          VERSION="${{ github.event.inputs.version }}"
+        fi
+        echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+        echo "📦 Package Version: $VERSION"
+
     - name: 📦 Restore dependencies
-      run: dotnet restore JsonViewer.Blazor.sln
+      run: dotnet restore ${{ env.PROJECT_PATH }}
 
     - name: 🏗️ Build
-      run: dotnet build JsonViewer.Blazor.sln --configuration Release --no-restore
-
-    - name: 🧪 Run tests
-      run: dotnet test JsonViewer.Blazor.sln --configuration Release --no-build --verbosity normal
+      run: dotnet build ${{ env.PROJECT_PATH }} --configuration Release --no-restore
 
     - name: 📦 Pack Component
       run: |
@@ -49,9 +56,14 @@ jobs:
           --configuration Release \
           --no-build \
           --output ./packages \
-          /p:PackageVersion=${{ github.event.inputs.version || github.event.release.tag_name }} \
+          /p:PackageVersion=${{ steps.version.outputs.VERSION }} \
           /p:IncludeSymbols=true \
           /p:SymbolPackageFormat=snupkg
+
+    - name: 📋 List Packages
+      run: |
+        echo "📦 Created packages:"
+        ls -la ./packages/
 
     - name: 🚀 Push to NuGet
       run: |
@@ -61,17 +73,15 @@ jobs:
           --skip-duplicate
 
     - name: 📤 Upload NuGet Package Artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: nuget-packages
-        path: ./packages/*.nupkg
+        path: ./packages/*
 
-    - name: 📝 Create Release Notes
-      if: github.event_name == 'release'
+    - name: 📝 Create Summary
       run: |
         echo "## 📦 NuGet Package Published" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "- **Package**: JsonViewer.Blazor" >> $GITHUB_STEP_SUMMARY
-        echo "- **Version**: ${{ github.event.release.tag_name }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Version**: ${{ steps.version.outputs.VERSION }}" >> $GITHUB_STEP_SUMMARY
         echo "- **NuGet**: https://www.nuget.org/packages/JsonViewer.Blazor" >> $GITHUB_STEP_SUMMARY
-

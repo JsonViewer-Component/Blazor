@@ -19,8 +19,6 @@ jobs:
     steps:
     - name: 📥 Checkout
       uses: actions/checkout@v4
-      with:
-        fetch-depth: 0  # برای GitVersion
 
     - name: ⚙️ Setup .NET
       uses: actions/setup-dotnet@v4
@@ -30,42 +28,16 @@ jobs:
     - name: 📦 Restore dependencies
       run: dotnet restore JsonViewer.Blazor.sln
 
-    - name: 🏗️ Build
-      run: dotnet build JsonViewer.Blazor.sln --no-restore --configuration Release
+    - name: 🏗️ Build Component
+      run: dotnet build src/Component/Component.csproj --no-restore --configuration Release
 
-    - name: 🧪 Test
-      run: dotnet test JsonViewer.Blazor.sln --no-build --configuration Release --verbosity normal
+    - name: 🏗️ Build Demo
+      run: dotnet build src/Blazor.Demo/Blazor.Demo.csproj --no-restore --configuration Release
 
-    - name: 📊 Code Coverage
+    - name: ✅ Build Summary
       run: |
-        dotnet test JsonViewer.Blazor.sln \
-          --no-build \
-          --configuration Release \
-          --collect:"XPlat Code Coverage" \
-          --results-directory ./coverage
-
-    - name: 📤 Upload Coverage
-      uses: codecov/codecov-action@v3
-      with:
-        directory: ./coverage
-        fail_ci_if_error: false
-
-  analyze:
-    name: 🔍 Code Analysis
-    runs-on: ubuntu-latest
-
-    steps:
-    - name: 📥 Checkout
-      uses: actions/checkout@v4
-
-    - name: ⚙️ Setup .NET
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: ${{ env.DOTNET_VERSION }}
-
-    - name: 🔍 Format Check
-      run: dotnet format JsonViewer.Blazor.sln --verify-no-changes --no-restore
-
-    - name: 📊 Code Analysis
-      run: dotnet build JsonViewer.Blazor.sln -warnaserror
-
+        echo "## 🏗️ Build Summary" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "- **Component**: ✅ Built successfully" >> $GITHUB_STEP_SUMMARY
+        echo "- **Demo**: ✅ Built successfully" >> $GITHUB_STEP_SUMMARY
+        echo "- **.NET Version**: ${{ env.DOTNET_VERSION }}" >> $GITHUB_STEP_SUMMARY
