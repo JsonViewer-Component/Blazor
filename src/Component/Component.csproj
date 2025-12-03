@@ -102,8 +102,7 @@ For full changelog, visit: https://github.com/JsonViewer-Component/Blazor/blob/m
     <!-- Source Link for debugging -->
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
-    <IncludeSymbols>true</IncludeSymbols>
-    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <IncludeSymbols>false</IncludeSymbols>
     <DebugType>embedded</DebugType>
   </PropertyGroup>
 

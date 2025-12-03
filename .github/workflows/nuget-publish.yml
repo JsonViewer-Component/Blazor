@@ -59,9 +59,7 @@ jobs:
           --configuration Release \
           --no-build \
           --output ./packages \
-          /p:PackageVersion=${{ steps.version.outputs.VERSION }} \
-          /p:IncludeSymbols=true \
-          /p:SymbolPackageFormat=snupkg
+          /p:PackageVersion=${{ steps.version.outputs.VERSION }}
 
     - name: 📋 List Packages
       run: |
@@ -76,7 +74,8 @@ jobs:
         dotnet nuget push ./packages/*.nupkg \
           --api-key ${{ secrets.NUGET_API_KEY }} \
           --source https://api.nuget.org/v3/index.json \
-          --skip-duplicate
+          --skip-duplicate \
+          --no-symbols
       continue-on-error: false
 
     # ═══════════════════════════════════════════════════════════
@@ -87,7 +86,8 @@ jobs:
         dotnet nuget push ./packages/*.nupkg \
           --api-key ${{ secrets.GITHUB_TOKEN }} \
           --source https://nuget.pkg.github.com/JsonViewer-Component/index.json \
-          --skip-duplicate
+          --skip-duplicate \
+          --no-symbols
       continue-on-error: true
 
     # ═══════════════════════════════════════════════════════════
@@ -97,9 +97,7 @@ jobs:
       if: github.event_name == 'release'
       uses: softprops/action-gh-release@v2
       with:
-        files: |
-          ./packages/*.nupkg
-          ./packages/*.snupkg
+        files: ./packages/*.nupkg
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
