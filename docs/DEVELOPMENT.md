@@ -51,12 +51,12 @@ JsonViewer.Blazor/
 │   │   ├── Services/
 │   │   └── Component.csproj
 │   │
-│   └── Blazor.Demo/  # Demo application
+│   └── Blazor.Demo/            # Demo application
 │       ├── Pages/
 │       ├── Shared/
 │       └── wwwroot/
 │
-├── .vscode/                    # تنظیمات VS Code
+├── .vscode/                    # VS Code settings
 │   ├── settings.json
 │   ├── launch.json
 │   ├── tasks.json
@@ -65,10 +65,14 @@ JsonViewer.Blazor/
 ├── .github/                    # CI/CD
 │   └── workflows/
 │
-├── .editorconfig               # قوانین فرمت
-├── Directory.Build.props       # تنظیمات مشترک MSBuild
-├── global.json                 # نسخه .NET SDK
-└── nuget.config               # تنظیمات NuGet
+├── docs/                       # Documentation
+├── docker/                     # Docker configuration
+├── assets/                     # Static assets
+│
+├── .editorconfig               # Format rules
+├── Directory.Build.props       # Shared MSBuild settings
+├── global.json                 # .NET SDK version
+└── nuget.config                # NuGet settings
 ```
 
 ## ⚡ Useful Commands
@@ -76,13 +80,13 @@ JsonViewer.Blazor/
 ### Build & Run
 
 ```bash
-# بیلد کل Solution
+# Build entire Solution
 dotnet build
 
-# بیلد فقط Component
+# Build only Component
 dotnet build src/Component/Component.csproj
 
-# اجرای Demo
+# Run Demo
 dotnet run --project src/Blazor.Demo/Blazor.Demo.csproj
 
 # Watch Mode (Hot Reload)
@@ -92,10 +96,10 @@ dotnet watch --project src/Blazor.Demo/Blazor.Demo.csproj
 ### Clean & Restore
 
 ```bash
-# پاک‌سازی
+# Clean
 dotnet clean
 
-# Restore پکیج‌ها
+# Restore packages
 dotnet restore
 
 # Clean + Restore + Build
@@ -105,83 +109,83 @@ dotnet clean && dotnet restore && dotnet build
 ### Format & Lint
 
 ```bash
-# فرمت کردن کد
+# Format code
 dotnet format
 
-# بررسی فرمت بدون تغییر
+# Check format without changes
 dotnet format --verify-no-changes
 
-# تحلیل کد
+# Code analysis
 dotnet build -warnaserror
 ```
 
 ### Package Management
 
 ```bash
-# لیست پکیج‌های outdated
+# List outdated packages
 dotnet outdated
 
-# آپدیت پکیج خاص
+# Update specific package
 dotnet add package PackageName --version x.x.x
 
-# حذف پکیج
+# Remove package
 dotnet remove package PackageName
 
-# ساخت NuGet Package
+# Create NuGet Package
 dotnet pack src/Component/Component.csproj -c Release -o ./packages
 ```
 
-## 🐛 دیباگ
+## 🐛 Debugging
 
 ### VS Code
 
-1. `F5` را فشار دهید یا از Debug panel استفاده کنید
-2. از launch configurations موجود استفاده کنید:
-   - **Launch Blazor WASM Demo**: اجرای Demo
-   - **Debug Component Library**: دیباگ Component
-   - **Attach to Process**: Attach به process در حال اجرا
+1. Press `F5` or use the Debug panel
+2. Use available launch configurations:
+   - **Launch Blazor WASM Demo**: Run Demo
+   - **Debug Component Library**: Debug Component
+   - **Attach to Process**: Attach to running process
 
 ### Browser DevTools
 
 ```javascript
-// دسترسی به Blazor در Browser Console
+// Access Blazor in Browser Console
 Blazor.start();
 
-// مشاهده لاگ‌ها
+// View logs
 console.log('Blazor app loaded');
 ```
 
 ### Breakpoints
 
-در فایل‌های `.razor`:
+In `.razor` files:
 
 ```csharp
 @code {
     protected override async Task OnInitializedAsync()
     {
-        // Breakpoint اینجا کار می‌کند
+        // Breakpoint works here
         await base.OnInitializedAsync();
     }
 }
 ```
 
-## 🧪 تست
+## 🧪 Testing
 
 ```bash
-# اجرای همه تست‌ها
+# Run all tests
 dotnet test
 
-# اجرای با جزئیات بیشتر
+# Run with detailed output
 dotnet test --verbosity detailed
 
-# اجرای تست‌های خاص
+# Run specific tests
 dotnet test --filter "FullyQualifiedName~JsonViewerTests"
 
 # Coverage
 dotnet test --collect:"XPlat Code Coverage"
 ```
 
-### نوشتن تست
+### Writing Tests
 
 ```csharp
 using Xunit;
@@ -203,10 +207,10 @@ public class JsonViewerTests
 }
 ```
 
-## 📦 بیلد Production
+## 📦 Production Build
 
 ```bash
-# بیلد Release
+# Release build
 dotnet build -c Release
 
 # Publish
@@ -214,7 +218,7 @@ dotnet publish src/Blazor.Demo/Blazor.Demo.csproj \
   -c Release \
   -o ./publish
 
-# ساخت NuGet Package
+# Create NuGet Package
 dotnet pack src/Component/Component.csproj \
   -c Release \
   -o ./packages \
@@ -224,21 +228,21 @@ dotnet pack src/Component/Component.csproj \
 ### Docker
 
 ```bash
-# بیلد Image
-docker build -t jsonviewer-blazor .
+# Build Image
+docker build -t jsonviewer-blazor -f docker/Dockerfile .
 
-# اجرا
+# Run
 docker run -d -p 8080:80 jsonviewer-blazor
 
-# استفاده از Docker Compose
-docker-compose up -d
+# Use Docker Compose
+docker-compose -f docker/docker-compose.yml up -d
 ```
 
-## 🔧 تنظیمات پیشرفته
+## 🔧 Advanced Settings
 
 ### Hot Reload
 
-Hot Reload به صورت پیش‌فرض فعال است. برای غیرفعال کردن:
+Hot Reload is enabled by default. To disable:
 
 ```bash
 dotnet watch run --no-hot-reload
@@ -246,7 +250,7 @@ dotnet watch run --no-hot-reload
 
 ### Custom Configuration
 
-در `appsettings.Development.json`:
+In `appsettings.Development.json`:
 
 ```json
 {
@@ -273,13 +277,13 @@ ASPNETCORE_ENVIRONMENT=Development dotnet run
 ## 📊 Performance Profiling
 
 ```bash
-# استفاده از dotnet-trace
+# Use dotnet-trace
 dotnet tool install --global dotnet-trace
 
-# Trace کردن برنامه
+# Trace the application
 dotnet trace collect --process-id <PID>
 
-# تحلیل
+# Analyze
 speedscope trace.nettrace
 ```
 
@@ -288,16 +292,16 @@ speedscope trace.nettrace
 ### Blazor Specific
 
 ```csharp
-// لاگ در Browser Console
+// Log in Browser Console
 Console.WriteLine("Debug message");
 
-// استفاده از IJSRuntime
+// Use IJSRuntime
 await JSRuntime.InvokeVoidAsync("console.log", "Message from C#");
 ```
 
 ### Source Link
 
-برای دیباگ در NuGet packages:
+For debugging in NuGet packages:
 
 ```xml
 <PropertyGroup>
@@ -309,13 +313,13 @@ await JSRuntime.InvokeVoidAsync("console.log", "Message from C#");
 
 ## 📱 Mobile Development
 
-برای تست روی موبایل:
+For testing on mobile:
 
 ```bash
-# اجرا با IP خاص
+# Run with specific IP
 dotnet run --urls "http://0.0.0.0:5000"
 
-# دسترسی از موبایل
+# Access from mobile
 http://<your-ip>:5000
 ```
 
@@ -324,56 +328,56 @@ http://<your-ip>:5000
 ### Faster Build
 
 ```bash
-# استفاده از parallel build
+# Use parallel build
 dotnet build -m
 
-# کش کردن NuGet
+# Clear NuGet cache
 dotnet nuget locals all --clear
 ```
 
 ### VS Code Tasks
 
-از Tasks موجود در `.vscode/tasks.json` استفاده کنید:
+Use Tasks available in `.vscode/tasks.json`:
 
 - `Ctrl+Shift+B`: Build
-- از Command Palette: `Tasks: Run Task`
+- From Command Palette: `Tasks: Run Task`
 
 ### Snippets
 
-Snippets مفید در `.vscode/*.code-snippets`:
+Useful snippets in `.vscode/*.code-snippets`:
 
-- `blazor-component`: کامپوننت Blazor
+- `blazor-component`: Blazor component
 - `api-controller`: API Controller
-- `service-impl`: پیاده‌سازی Service
+- `service-impl`: Service implementation
 
-## 🆘 مشکلات متداول
+## 🆘 Common Issues
 
 ### Build Errors
 
 ```bash
-# پاک کردن کش
+# Clear cache
 dotnet clean
 dotnet nuget locals all --clear
 dotnet restore
 dotnet build
 ```
 
-### Hot Reload نکار می‌کند
+### Hot Reload Not Working
 
 ```bash
-# ریستارت dotnet watch
+# Restart dotnet watch
 Ctrl+C
 dotnet watch run
 ```
 
-### Port در حال استفاده
+### Port In Use
 
 ```bash
-# تغییر port در launchSettings.json
+# Change port in launchSettings.json
 "applicationUrl": "https://localhost:5002;http://localhost:5001"
 ```
 
-## 📚 منابع مفید
+## 📚 Useful Resources
 
 - [Blazor Docs](https://docs.microsoft.com/aspnet/core/blazor)
 - [C# Coding Conventions](https://docs.microsoft.com/dotnet/csharp/fundamentals/coding-style/coding-conventions)
@@ -381,5 +385,5 @@ dotnet watch run
 
 ---
 
-**سوال دارید؟** Issue باز کنید یا در Discussions بپرسید!
+**Have questions?** Open an issue or ask in Discussions!
 

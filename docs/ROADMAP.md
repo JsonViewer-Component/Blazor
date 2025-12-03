@@ -190,7 +190,7 @@ Want to see a feature added? Here's how:
 1. 📝 [Open a Feature Request](https://github.com/JsonViewer-Component/Blazor/issues/new?template=feature_request.yml)
 2. 💬 [Start a Discussion](https://github.com/JsonViewer-Component/Blazor/discussions/new?category=ideas)
 3. ⭐ Vote on existing feature requests
-4. 🤝 Contribute code (see [CONTRIBUTING.md](CONTRIBUTING.md))
+4. 🤝 Contribute code (see [CONTRIBUTING.md](../.github/CONTRIBUTING.md))
 
 ---
 

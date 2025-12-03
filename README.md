@@ -2,7 +2,7 @@
 
 <div align="center">
 
-![JSON Viewer Component](https://raw.githubusercontent.com/JsonViewer-Component/Blazor/main/logo.png)
+![JSON Viewer Component](https://raw.githubusercontent.com/JsonViewer-Component/Blazor/main/assets/logo.png)
 
 A powerful, feature-rich JSON viewer component for Blazor applications with VS Code-style syntax highlighting.
 
@@ -172,7 +172,7 @@ We welcome contributions! Here's how you can help:
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
-Please read our [Contributing Guide](https://github.com/JsonViewer-Component/Blazor/blob/main/CONTRIBUTING.md) for more details.
+Please read our [Contributing Guide](https://github.com/JsonViewer-Component/Blazor/blob/main/.github/CONTRIBUTING.md) for more details.
 
 ---
 

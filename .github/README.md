@@ -105,7 +105,7 @@ Labels are automatically applied based on:
 
 ## 🤝 Contributing
 
-See the main [CONTRIBUTING.md](../CONTRIBUTING.md) for guidelines.
+See the main [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 ## 🔄 Workflow Badges
 

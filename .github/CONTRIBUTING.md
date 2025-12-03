@@ -34,7 +34,7 @@ Before creating bug reports, please check the [existing issues](https://github.c
 
 When you create a bug report, please include as many details as possible:
 
-- Use our [Bug Report Template](.github/ISSUE_TEMPLATE/bug_report.yml)
+- Use our [Bug Report Template](ISSUE_TEMPLATE/bug_report.yml)
 - Include screenshots or GIFs if applicable
 - Provide code samples to reproduce the issue
 - Describe the expected vs actual behavior
@@ -43,7 +43,7 @@ When you create a bug report, please include as many details as possible:
 
 Enhancement suggestions are tracked as [GitHub issues](https://github.com/JsonViewer-Component/Blazor/issues).
 
-- Use our [Feature Request Template](.github/ISSUE_TEMPLATE/feature_request.yml)
+- Use our [Feature Request Template](ISSUE_TEMPLATE/feature_request.yml)
 - Provide a clear description of the enhancement
 - Explain why this enhancement would be useful
 - Include code examples or mockups if applicable
@@ -108,7 +108,8 @@ Blazor/
 ├── .github/
 │   ├── workflows/             # CI/CD pipelines
 │   └── ISSUE_TEMPLATE/       # Issue templates
-├── Documents/                # Additional documentation
+├── docs/                     # Documentation
+├── docker/                   # Docker configuration
 └── README.md
 ```
 
@@ -116,7 +117,7 @@ Blazor/
 
 1. **Update Documentation**: Ensure any changes are documented
 2. **Update Tests**: Add or update tests for your changes
-3. **Update CHANGELOG**: Add your changes to [CHANGELOG.md](CHANGELOG.md)
+3. **Update CHANGELOG**: Add your changes to [CHANGELOG.md](../docs/CHANGELOG.md)
 4. **Follow Code Standards**: Ensure your code follows our coding standards
 5. **Request Review**: Tag maintainers for review
 
@@ -311,7 +312,7 @@ All submissions require review. We use GitHub Pull Requests for this purpose:
 
 Contributors will be recognized in:
 
-- [README.md](README.md) acknowledgments section
+- [README.md](../README.md) acknowledgments section
 - Release notes for the version
 - Project's contributors page
 
@@ -336,3 +337,4 @@ Your contributions make the open-source community an amazing place to learn, ins
 ---
 
 *This Contributing Guide is adapted from open-source contribution guidelines best practices.*
+

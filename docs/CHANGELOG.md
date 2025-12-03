@@ -86,7 +86,7 @@ dotnet add package JsonViewer.Blazor --version 0.0.2-beta
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for details on how to contribute to this project.
+See [CONTRIBUTING.md](../.github/CONTRIBUTING.md) for details on how to contribute to this project.
 
 ## Links
 
