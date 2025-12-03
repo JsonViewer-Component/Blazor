@@ -4,38 +4,128 @@
     <TargetFramework>net7.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-
-    <!-- NuGet Package Configuration -->
-    <PackageId>JsonViewer.Blazor</PackageId>
-    <Version>0.0.2-beta</Version>
-    <Authors>parsapanahpoor</Authors>
-    <Company>JsonViewer-Component</Company>
-    <Product>JsonViewer.Blazor</Product>
-    <Description>A powerful JSON viewer component for Blazor with search, statistics, themes, and editing capabilities.</Description>
-    <PackageTags>blazor;json;viewer;component;wasm;webassembly;dotnet;csharp</PackageTags>
-    <PackageProjectUrl>https://github.com/JsonViewer-Component/Blazor</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/JsonViewer-Component/Blazor</RepositoryUrl>
-    <RepositoryType>git</RepositoryType>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageReadmeFile>README.md</PackageReadmeFile>
-    <PackageIcon>logo.png</PackageIcon>
-    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
 
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <!-- 📦 NuGet Package Metadata                                        -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <PropertyGroup>
+    <!-- Basic Info -->
+    <PackageId>JsonViewer.Blazor</PackageId>
+    <Version>0.0.3-beta</Version>
+    <Title>JSON Viewer for Blazor</Title>
+    <Authors>Parsa Panahpoor</Authors>
+    <Company>JsonViewer-Component</Company>
+    <Product>JsonViewer.Blazor</Product>
+    <Copyright>© 2025 Parsa Panahpoor. All rights reserved.</Copyright>
+
+    <!-- Description - Shows on NuGet page -->
+    <Description>
+🚀 A powerful, feature-rich JSON viewer component for Blazor applications.
+
+✨ Features:
+• VS Code-style syntax highlighting
+• Dark &amp; Light theme support with persistence
+• Real-time search with match highlighting and navigation
+• JSON statistics (size, depth, type distribution)
+• Edit mode with auto-formatting and validation
+• Copy &amp; Export functionality
+• Keyboard shortcuts (Enter, Shift+Enter)
+• Line numbers with active line highlighting
+• Expand/Collapse individual or all nodes
+• Fully responsive design
+• High performance - handles large JSON files
+
+📦 Easy to install and use in Blazor WebAssembly and Blazor Server applications.
+    </Description>
+
+    <!-- Summary for package manager UI -->
+    <Summary>A powerful JSON viewer component for Blazor with search, statistics, themes, and editing capabilities.</Summary>
+
+    <!-- Tags - Help users find your package -->
+    <PackageTags>blazor;json;viewer;component;wasm;webassembly;dotnet;csharp;razor;asp.net;json-viewer;syntax-highlighting;dark-theme;light-theme;search;export;copy;statistics;tree-view;collapsible;expandable;editor;formatter;beautifier</PackageTags>
+
+    <!-- Release Notes - Shows in NuGet "Release Notes" tab -->
+    <PackageReleaseNotes>
+## 🎉 Version 0.0.3-beta
+
+### ✨ New Features
+- Improved repository structure
+- Enhanced documentation
+- Better CI/CD pipeline
+
+### 🐛 Bug Fixes
+- Fixed Persian comments translated to English
+- Fixed workflow issues
+- Improved code quality
+
+### 📚 Documentation
+- Reorganized project structure
+- Updated all documentation to English
+- Added comprehensive CHANGELOG
+
+For full changelog, visit: https://github.com/JsonViewer-Component/Blazor/blob/main/docs/CHANGELOG.md
+    </PackageReleaseNotes>
+  </PropertyGroup>
+
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <!-- 🔗 Links &amp; Repository                                           -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <PropertyGroup>
+    <PackageProjectUrl>https://github.com/JsonViewer-Component/Blazor</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/JsonViewer-Component/Blazor.git</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryBranch>main</RepositoryBranch>
+
+    <!-- NuGet package icon and readme -->
+    <PackageIcon>logo.png</PackageIcon>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+
+    <!-- License -->
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+  </PropertyGroup>
+
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <!-- 🛠️ Build Configuration                                          -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <PropertyGroup>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);1591</NoWarn>
+
+    <!-- Deterministic builds for reproducibility -->
+    <Deterministic>true</Deterministic>
+    <ContinuousIntegrationBuild Condition="'$(GITHUB_ACTIONS)' == 'true'">true</ContinuousIntegrationBuild>
+
+    <!-- Source Link for debugging -->
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <DebugType>embedded</DebugType>
+  </PropertyGroup>
+
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <!-- 📚 Dependencies                                                  -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
   <ItemGroup>
     <SupportedPlatform Include="browser" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="7.0.20" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
   </ItemGroup>
 
   <ItemGroup>
     <Folder Include="wwwroot\" />
   </ItemGroup>
 
-  <!-- Include files in NuGet package -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <!-- 📦 Files included in NuGet Package                               -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
   <ItemGroup>
     <None Include="..\..\README.md" Pack="true" PackagePath="\" />
     <None Include="..\..\Documents\assets\logo.png" Pack="true" PackagePath="\" />
