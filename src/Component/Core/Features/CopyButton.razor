@@ -15,54 +15,54 @@
 
 @code {
     /// <summary>
-    /// محتوای متنی که باید کپی شود
+    /// Text content to be copied
     /// </summary>
     [Parameter]
     public string Content { get; set; } = string.Empty;
 
     /// <summary>
-    /// متن Tooltip دکمه
+    /// Button tooltip text
     /// </summary>
     [Parameter]
     public string Title { get; set; } = "Copy";
 
     /// <summary>
-    /// کلاس‌های CSS دکمه
+    /// Button CSS classes
     /// </summary>
     [Parameter]
     public string ButtonClass { get; set; } = "btn btn-sm btn-light mb-2";
 
     /// <summary>
-    /// نام آیکون (استفاده از کامپوننت Icon)
+    /// Icon name (using Icon component)
     /// </summary>
     [Parameter]
     public string IconName { get; set; } = "clipboard";
 
     /// <summary>
-    /// متن اختیاری کنار آیکون
+    /// Optional text next to icon
     /// </summary>
     [Parameter]
     public string ButtonText { get; set; } = string.Empty;
 
     /// <summary>
-    /// رویداد موفقیت - پیام به Parent برمی‌گردد
+    /// Success event - message returned to parent
     /// </summary>
     [Parameter]
     public EventCallback<string> OnCopySuccess { get; set; }
 
     /// <summary>
-    /// رویداد خطا - پیام خطا به Parent برمی‌گردد
+    /// Error event - error message returned to parent
     /// </summary>
     [Parameter]
     public EventCallback<string> OnCopyError { get; set; }
 
     /// <summary>
-    /// دکمه زمانی که محتوا خالی است غیرفعال می‌شود
+    /// Button is disabled when content is empty
     /// </summary>
     private bool IsDisabled => string.IsNullOrEmpty(Content);
 
     /// <summary>
-    /// مدیریت کلیک دکمه کپی
+    /// Handle copy button click
     /// </summary>
     private async Task HandleCopyClick()
     {

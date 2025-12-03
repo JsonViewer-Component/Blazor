@@ -8,13 +8,12 @@
 
 	<ItemGroup>
 		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="7.0.20" />
-		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="7.0.0" PrivateAssets="all" />
+		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="7.0.20" PrivateAssets="all" />
 	</ItemGroup>
 
 	<ItemGroup>
 	  <ProjectReference Include="..\Component\Component.csproj" />
 	</ItemGroup>
 
-	<!-- ✅ Reference به کتابخانه -->
 
 </Project>

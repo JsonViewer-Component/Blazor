@@ -27,7 +27,7 @@
 <div class="json-viewer-container @(isDarkTheme ? "dark-theme" : "light-theme") @(isFullScreen ? "full-screen fullscreen-active" : "")"
      @ref="containerRef" data-theme="@(isDarkTheme ? "dark" : "light")" style="direction:ltr;">
 
-    @* بخش Loading State *@
+    @* Loading State Section *@
     @if (isProcessing)
     {
         <div class="loading-overlay">
@@ -36,13 +36,13 @@
         </div>
     }
 
-    @* 🎯 بخش مرکزی با Layout چهار طرف *@
+    @* Main Center Section with Four-sided Layout *@
     <div class="json-viewer-main-layout">
 
         <div class="json-content-wrapper">
             @if (IsEditable && isEditMode)
             {
-                @* حالت Edit *@
+                @* Edit Mode *@
                 <div class="edit-mode-container">
 
                     <div class="d-flex justify-content-between align-items-center mb-2">
@@ -68,10 +68,10 @@
 
             else if (jsonToken != null)
             {
-                @* Layout با دکمه‌های سمت چپ *@
+                @* Layout with Left Sidebar Buttons *@
                 <div class="json-viewer-with-sidebar">
 
-                    @* Sidebar چپ با دکمه‌های عمودی *@
+                    @* Left Sidebar with Vertical Buttons *@
                     <div class="json-left-sidebar">
                         <button class="btn btn-sm btn-light mb-2 @(allExpanded ? "selected-btn-light-them" : "")"
                                 @onclick="ExpandAll"
@@ -107,14 +107,14 @@
 
                     </div>
 
-                    @* Wrapper برای Top Toolbar + Main Content *@
+                    @* Wrapper for Top Toolbar + Main Content *@
                     <div class="json-content-column">
                         @* Top Toolbar (Edit Button) *@
                         @if (IsEditable && !isEditMode)
                         {
                             <div class="json-top-toolbar">
 
-                                @* 🔍 Search & Navigation Section *@
+                                        @* Search & Navigation Section *@
                                 <div class="search-navigation-container">
 
                                     <input type="text"
@@ -183,7 +183,7 @@
                             </div>
                         }
 
-                        @* محتوای JSON *@
+                        @* JSON Content *@
                         <div class="json-main-content">
                             <div class="vscode-json-viewer">
                                 @* Line Numbers Column *@
@@ -209,7 +209,7 @@
                                                 <span class="indent-guide" style="left: @((j * 20) + 10)px;"></span>
                                             }
 
-                                            @* Line Content با Highlight *@
+                                            @* Line Content with Highlight *@
                                             <div class="vscode-line-content" style="margin-left: @(line.IndentLevel * 20)px;">
                                                 @if (!string.IsNullOrWhiteSpace(searchText) && hasSearchMatch)
                                                 {
@@ -229,11 +229,11 @@
                         </div>
                     </div>
 
-                    @* Sidebar راست با دکمه‌های عمودی *@
+                    @* Right Sidebar with Vertical Buttons *@
                     <div class="json-viewer-right-section">
                         @if (jsonToken != null && !isEditMode)
                         {
-                            @* 🔥 دکمه‌های Scroll Navigation *@
+                            @* Scroll Navigation Buttons *@
                             <div class="scroll-navigation-buttons">
                                 <button class="btn btn-sm btn-light scroll-nav-btn"
                                         @onclick="ScrollToTop"
@@ -263,10 +263,10 @@
 
     </div>
 
-    @* 🔻 بخش پایین (Bottom Section) - برای فیچرهای آینده *@
+    @* Bottom Section - For Future Features *@
     <div class="json-viewer-bottom-section">
 
-@* 🔻 بخش پایین (Bottom Section) *@
+@* Bottom Section *@
 <div class="json-viewer-bottom-section">
 
 </div>
@@ -338,10 +338,10 @@
                 try
                 {
                     jsonToken = JsonNode.Parse(JsonData);
-                    editableJsonText = jsonToken?.ToJsonString(new JsonSerializerOptions 
-                    { 
-                        WriteIndented = true 
-                    }) ?? string.Empty;         
+                    editableJsonText = jsonToken?.ToJsonString(new JsonSerializerOptions
+                    {
+                        WriteIndented = true
+                    }) ?? string.Empty;
                     RenderJsonLines();
                 }
                 catch
@@ -393,18 +393,18 @@
         {
             dotNetHelper = DotNetObjectReference.Create(this);
 
-            // ثبت تمام JS Functions
+            // Register all JS Functions
             await jsRuntime.InvokeVoidAsync("eval", @"
-                // ✅ Theme Auto-Sync System (کاملاً مستقل)
+                // Theme Auto-Sync System (fully independent)
                 if (!window.jsonViewerThemeSyncInitialized) {
-                    
-                    // 📡 Function برای Detect کردن تمام Theme Keys
+
+                    // Function to detect all Theme Keys
                     window.detectParentTheme = function() {
                         const themeKeys = ['app-theme', 'main-theme', 'theme', 'appTheme', 'mainTheme'];
-                        
+
                         for (let key of themeKeys) {
                             const value = localStorage.getItem(key);
-                            if (value === 'dark' || value === 'Dark' || 
+                            if (value === 'dark' || value === 'Dark' ||
                                 value === 'light' || value === 'Light') {
                                 return value.toLowerCase();
                             }
@@ -412,7 +412,7 @@
                         return null;
                     };
 
-                    // 🔄 Function برای اعمال تم به کامپوننت
+                    // Function to apply theme to component
                     window.applyJsonViewerTheme = function(theme) {
                         const container = document.querySelector('.json-viewer-container');
                         if (container) {
@@ -430,27 +430,27 @@
 
                     // 📊 Storage Event Listener (Cross-Tab Sync)
                     window.addEventListener('storage', function(e) {
-                        // بررسی تمام Theme Keys
+                        // Check all Theme Keys
                         if (e.key && e.key.toLowerCase().includes('theme') && e.newValue) {
                             const normalizedTheme = e.newValue.toLowerCase();
-                            
+
                             if (normalizedTheme === 'dark' || normalizedTheme === 'light') {
-                                // ذخیره در سشن خود کامپوننت
+                                // Save in component's own session
                                 localStorage.setItem('json-viewer-theme', normalizedTheme);
-                                
-                                // اعمال به UI
+
+                                // Apply to UI
                                 window.applyJsonViewerTheme(normalizedTheme);
-                                
+
                                 console.log('✅ JsonViewer synced theme from:', e.key, '→', normalizedTheme);
                             }
                         }
                     });
 
-                    // 🔁 Polling برای Same-Tab Updates (هر 500ms)
+                    // Polling for Same-Tab Updates (every 500ms)
                     window.jsonViewerThemePoller = setInterval(function() {
                         const currentJsonViewerTheme = localStorage.getItem('json-viewer-theme');
                         const parentTheme = window.detectParentTheme();
-                        
+
                         if (parentTheme && parentTheme !== currentJsonViewerTheme) {
                             localStorage.setItem('json-viewer-theme', parentTheme);
                             window.applyJsonViewerTheme(parentTheme);
@@ -561,14 +561,14 @@
 
             await jsRuntime.InvokeVoidAsync("registerJsonViewerToggle", dotNetHelper);
 
-            // 🎯 Load Initial Theme با Priority
+            // Load Initial Theme with Priority
             var jsonViewerTheme = await jsRuntime.InvokeAsync<string>("localStorage.getItem", "json-viewer-theme");
-            
-            // اگر سشن خودش رو نداره، از Parent بگیر
+
+            // If it doesn't have its own session, get from Parent
             if (string.IsNullOrEmpty(jsonViewerTheme))
             {
                 jsonViewerTheme = await jsRuntime.InvokeAsync<string>("detectParentTheme");
-                
+
                 if (!string.IsNullOrEmpty(jsonViewerTheme))
                 {
                     await jsRuntime.InvokeVoidAsync("localStorage.setItem", "json-viewer-theme", jsonViewerTheme);
@@ -590,13 +590,13 @@
 }
 
 
-    // ✅ متد فراخوانی شده از JS برای Sync خودکار
+    // Method called from JS for auto sync
     [JSInvokable]
     public async Task OnThemeChangedFromStorage(bool isDark)
         {
             isDarkTheme = isDark;
             StateHasChanged();
-    
+
             Console.WriteLine($"🎨 Theme synced from storage: {(isDark ? "Dark" : "Light")}");
         }
 
@@ -634,7 +634,7 @@
     string id = obj.GetHashCode().ToString();
     bool isExpanded = expandedStates.GetValueOrDefault(id, allExpanded);
 
-    // خط شروع {
+    // Opening line {
     renderedLines.Add(new JsonLine
     {
         IndentLevel = indentLevel,
@@ -644,25 +644,25 @@
 
     if (isExpanded)
     {
-        var properties = obj.ToList(); // ✅ تغییر اینجا
+        var properties = obj.ToList(); // Convert to list
         for (int i = 0; i < properties.Count; i++)
         {
             var prop = properties[i];
             var comma = i < properties.Count - 1 ? "," : "";
 
-            // خط Property
+            // Property line
             var propLine = new JsonLine
             {
                 IndentLevel = indentLevel + 1,
                 Token = prop.Value
             };
 
-            // ساخت محتوای Property
+            // Build Property content
             var sb = new StringBuilder();
-            sb.Append($"<span class='json-property-name'>\"{prop.Key}\"</span>"); // ✅ تغییر به .Key
+            sb.Append($"<span class='json-property-name'>\"{prop.Key}\"</span>"); // Use .Key
             sb.Append("<span class='json-punctuation'>: </span>");
 
-            // مقدار Property
+            // Property value
             if (prop.Value is JsonObject || prop.Value is JsonArray)
             {
                 propLine.Content = sb.ToString();
@@ -680,16 +680,16 @@
     }
     else
     {
-        // حالت Collapsed
+        // Collapsed state
         renderedLines.Add(new JsonLine
         {
             IndentLevel = indentLevel + 1,
-            Content = $"<span class='json-collapsed'>... {obj.Count} properties</span>", // ✅ تغییر به .Count
+            Content = $"<span class='json-collapsed'>... {obj.Count} properties</span>", // Use .Count
             Token = obj
         });
     }
 
-    // خط پایان }
+    // Closing line }
     renderedLines.Add(new JsonLine
     {
         IndentLevel = indentLevel,
@@ -704,7 +704,7 @@
         string id = arr.GetHashCode().ToString();
         bool isExpanded = expandedStates.GetValueOrDefault(id, allExpanded);
 
-        // خط شروع [
+        // Opening line [
         renderedLines.Add(new JsonLine
         {
             IndentLevel = indentLevel,
@@ -744,7 +744,7 @@
             });
         }
 
-        // خط پایان ]
+        // Closing line ]
         renderedLines.Add(new JsonLine
         {
             IndentLevel = indentLevel,
@@ -768,26 +768,26 @@
         if (node == null)
             return "<span class='json-null'>null</span>";
 
-        // استفاده از JsonValue برای دسترسی به نوع واقعی
+        // Use JsonValue to access the actual type
         if (node is JsonValue jsonValue)
         {
-            // بررسی نوع مقدار
+            // Check value type
             if (jsonValue.TryGetValue<string>(out var strValue))
                 return $"<span class='json-string'>\"{strValue}\"</span>";
-        
+
             if (jsonValue.TryGetValue<bool>(out var boolValue))
                 return $"<span class='json-boolean'>{boolValue.ToString().ToLower()}</span>";
-        
-            if (jsonValue.TryGetValue<int>(out _) || 
+
+            if (jsonValue.TryGetValue<int>(out _) ||
                 jsonValue.TryGetValue<long>(out _) ||
                 jsonValue.TryGetValue<decimal>(out _))
                 return $"<span class='json-number'>{node.ToJsonString()}</span>";
-        
-            if (jsonValue.TryGetValue<double>(out _) || 
+
+            if (jsonValue.TryGetValue<double>(out _) ||
                 jsonValue.TryGetValue<float>(out _))
                 return $"<span class='json-number'>{node.ToJsonString()}</span>";
         }
-    
+
         return $"<span class='json-value'>{node.ToJsonString()}</span>";
     }
 
@@ -805,7 +805,7 @@
         }
         else
         {
-            expandedStates[tokenId] = !allExpanded; // 🔥 برعکس allExpanded
+            expandedStates[tokenId] = !allExpanded; // Opposite of allExpanded
         }
 
         RenderJsonLines();
@@ -816,12 +816,12 @@
     {
         if (allExpanded)
         {
-            // اگر همه باز هستند، همه رو ببند
+            // If all are expanded, collapse all
             CollapseAll();
         }
         else
         {
-            // اگر همه بسته هستند، همه رو باز کن
+            // If all are collapsed, expand all
             expandedStates.Clear();
             allExpanded = true;
             RenderJsonLines();
@@ -864,7 +864,7 @@
     }
 
     /// <summary>
-    /// مدیریت تغییر تم از ThemeToggle
+    /// Handle theme change from ThemeToggle
     /// </summary>
 private async Task HandleThemeChanged(bool isDark)
 {
@@ -873,7 +873,7 @@ private async Task HandleThemeChanged(bool isDark)
 
     try
     {
-        // 🔄 آپدیت تمام Session Keys حاوی 'theme'
+        // Update all Session Keys containing 'theme'
         await jsRuntime.InvokeVoidAsync("eval", $@"
             (function() {{
                 const themeKeys = [];
@@ -899,7 +899,7 @@ private async Task HandleThemeChanged(bool isDark)
         Console.WriteLine($"Error syncing theme: {ex.Message}");
     }
 
-    // اعمال تم به UI
+    // Apply theme to UI
     var action = isDark ? "add" : "remove";
     await jsRuntime.InvokeVoidAsync("eval",
         $"document.querySelector('.json-viewer-container')?.classList.{action}('dark-theme')");
@@ -948,7 +948,7 @@ private async Task FormatAndView()
         return;
     }
 
-    // 🔥 فعال‌سازی Loading
+    // Enable Loading
     isLoading = true;
     loadingMessage = "Formatting and rendering JSON...";
     StateHasChanged();
@@ -957,13 +957,13 @@ private async Task FormatAndView()
     {
         await Task.Delay(100);
 
-        // ✅ Parse JSON
+        // Parse JSON
         jsonToken = JsonNode.Parse(editableJsonText);
-        
-        // ✅ Beautify with proper formatting
+
+        // Beautify with proper formatting
         var options = new JsonSerializerOptions { WriteIndented = true };
         JsonData = jsonToken!.ToJsonString(options);
-        
+
         if (JsonDataChanged.HasDelegate)
         {
             await JsonDataChanged.InvokeAsync(JsonData);
@@ -971,15 +971,15 @@ private async Task FormatAndView()
 
         expandedStates.Clear();
         allExpanded = true;
-        
+
         RenderJsonLines();
-        
+
         isEditMode = false;
 
         await Task.Delay(50);
         StateHasChanged();
     }
-    catch (JsonException ex)  // ✅ System.Text.Json exception
+    catch (JsonException ex)  // System.Text.Json exception
     {
         await jsRuntime.InvokeVoidAsync("alert", $"Invalid JSON: {ex.Message}");
     }
@@ -989,7 +989,7 @@ private async Task FormatAndView()
     }
     finally
     {
-        // 🔥 غیرفعال‌سازی Loading
+        // Disable Loading
         isLoading = false;
         StateHasChanged();
     }
@@ -1000,7 +1000,7 @@ private void BackToEdit()
     isEditMode = true;
     if (jsonToken != null)
     {
-        // ✅ استفاده از ToJsonString بجای ToString
+        // Use ToJsonString instead of ToString
         var options = new JsonSerializerOptions { WriteIndented = true };
         editableJsonText = jsonToken.ToJsonString(options);
     }
@@ -1043,7 +1043,7 @@ private async Task DownloadJson()
         var json = FormatJsonNode(jsonToken);
         var fileName = $"export_{DateTime.Now:yyyyMMdd_HHmmss}.json";
 
-        // ✅ Serialize با System.Text.Json
+        // Serialize with System.Text.Json
         var jsonForJs = JsonSerializer.Serialize(json);
 
         await jsRuntime.InvokeVoidAsync("eval", $@"
@@ -1066,18 +1066,18 @@ private async Task DownloadJson()
     #region Helper Methods
 
 /// <summary>
-/// فرمت کردن JsonNode به JSON String
+/// Format JsonNode to JSON String
 /// </summary>
 private string FormatJsonNode(JsonNode? node)
 {
     if (node == null) return string.Empty;
-    
-    var options = new JsonSerializerOptions 
-    { 
+
+    var options = new JsonSerializerOptions
+    {
         WriteIndented = true,
         Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
     };
-    
+
     return node.ToJsonString(options);
 }
 
@@ -1088,7 +1088,7 @@ private string FormatJsonNode(JsonNode? node)
     public void Dispose()
     {
         dotNetHelper?.Dispose();
-    
+
         // Clear Polling Timer
         jsRuntime.InvokeVoidAsync("eval", @"
             if (window.jsonViewerThemePoller) {
@@ -1117,7 +1117,7 @@ private string FormatJsonNode(JsonNode? node)
     #region Search & Navigation Methods
 
     /// <summary>
-    /// مدیریت تغییر متن جستجو
+    /// Handle search text change
     /// </summary>
     private async Task OnSearchTextChanged()
     {
@@ -1131,7 +1131,7 @@ private string FormatJsonNode(JsonNode? node)
     }
 
     /// <summary>
-/// جستجوی متن در JSON
+/// Search text in JSON
 /// </summary>
 private async Task PerformSearch()
 {
@@ -1145,22 +1145,22 @@ private async Task PerformSearch()
         return;
     }
 
-    // ✅ گام 1: Expand All قبل از سرچ (تا همه خطوط رندر بشن)
+    // Step 1: Expand All before search (so all lines are rendered)
     if (!allExpanded)
     {
         expandedStates.Clear();
         allExpanded = true;
-        RenderJsonLines(); // رندر مجدد با همه خطوط باز
+        RenderJsonLines(); // Re-render with all lines expanded
     }
 
     var searchLower = searchText.ToLower();
 
-    // ✅ گام 2: جستجو فقط در Plain Text
+    // Step 2: Search only in Plain Text
     for (int i = 0; i < renderedLines.Count; i++)
     {
         var line = renderedLines[i];
 
-        // ✅ استخراج Plain Text از HTML
+        // Extract Plain Text from HTML
         var plainText = ExtractPlainTextFromHtml(line.Content);
         var plainTextLower = plainText.ToLower();
 
@@ -1174,7 +1174,7 @@ private async Task PerformSearch()
                 Length = searchText.Length,
                 MatchedText = searchText,
                 LineContent = line.Content, // HTML Content
-                PlainText = plainText // ✅ Plain Text
+                PlainText = plainText // Plain Text
             });
 
             startIndex += searchText.Length;
@@ -1211,7 +1211,7 @@ private async Task PerformSearch()
     }
 
     /// <summary>
-    /// رفتن به Match بعدی
+    /// Navigate to next match
     /// </summary>
     private async Task NavigateToNextMatch()
     {
@@ -1224,7 +1224,7 @@ private async Task PerformSearch()
     }
 
     /// <summary>
-    /// رفتن به Match قبلی
+    /// Navigate to previous match
     /// </summary>
     private async Task NavigateToPreviousMatch()
     {
@@ -1237,7 +1237,7 @@ private async Task PerformSearch()
     }
 
     /// <summary>
-    /// اسکرول به Match جاری (همزمان Line Numbers + JSON Content)
+    /// Scroll to current match (sync Line Numbers + JSON Content)
     /// </summary>
     private async Task ScrollToCurrentMatch()
     {
@@ -1250,7 +1250,7 @@ private async Task PerformSearch()
         {
             await jsRuntime.InvokeVoidAsync("eval", $@"
             (function() {{
-                // پیدا کردن Line Number مورد نظر
+                // Find the target Line Number
                 const lineNumbers = document.querySelectorAll('.vscode-line-number');
                 const jsonLines = document.querySelectorAll('.vscode-json-line');
 
@@ -1262,7 +1262,7 @@ private async Task PerformSearch()
                 const targetLineNumber = lineNumbers[{match.LineNumber - 1}];
                 const targetJsonLine = jsonLines[{match.LineNumber - 1}];
 
-                // پیدا کردن Container های Scroll
+                // Find Scroll Containers
                 const lineNumbersContainer = document.querySelector('.vscode-line-numbers');
                 const jsonContentContainer = document.querySelector('.vscode-json-content');
 
@@ -1271,12 +1271,12 @@ private async Task PerformSearch()
                     return;
                 }}
 
-                // محاسبه موقعیت
+                // Calculate position
                 const lineOffset = targetLineNumber.offsetTop;
                 const containerHeight = jsonContentContainer.clientHeight;
                 const scrollPosition = lineOffset - (containerHeight / 2) + 10;
 
-                // Smooth Scroll همزمان
+                // Simultaneous Smooth Scroll
                 lineNumbersContainer.scrollTo({{
                     top: scrollPosition,
                     behavior: 'smooth'
@@ -1287,13 +1287,13 @@ private async Task PerformSearch()
                     behavior: 'smooth'
                 }});
 
-                // Pulse Effect روی Line Number
+                // Pulse Effect on Line Number
                 targetLineNumber.classList.add('search-highlight-pulse');
                 setTimeout(() => {{
                     targetLineNumber.classList.remove('search-highlight-pulse');
                 }}, 1000);
 
-                // Pulse Effect روی JSON Line
+                // Pulse Effect on JSON Line
                 targetJsonLine.classList.add('search-highlight-pulse');
                 setTimeout(() => {{
                     targetJsonLine.classList.remove('search-highlight-pulse');
@@ -1308,7 +1308,7 @@ private async Task PerformSearch()
     }
 
     /// <summary>
-    /// پاک کردن جستجو
+    /// Clear search
     /// </summary>
     private void ClearSearch()
     {
@@ -1320,17 +1320,17 @@ private async Task PerformSearch()
     }
 
     /// <summary>
-    /// استخراج Plain Text از محتوای HTML
+    /// Extract Plain Text from HTML content
     /// </summary>
     private string ExtractPlainTextFromHtml(string htmlContent)
     {
         if (string.IsNullOrWhiteSpace(htmlContent))
             return string.Empty;
 
-        // حذف تمام تگ‌های HTML
+        // Remove all HTML tags
         var plainText = System.Text.RegularExpressions.Regex.Replace(htmlContent, @"<[^>]+>", string.Empty);
 
-        // Decode کردن HTML Entities
+        // Decode HTML Entities
         plainText = System.Net.WebUtility.HtmlDecode(plainText);
 
         return plainText;
@@ -1341,7 +1341,7 @@ private async Task PerformSearch()
     #region Search Highlighting in Content
 
     /// <summary>
-    /// Highlight کردن نتایج جستجو در یک خط
+    /// Highlight search results in a line
     /// </summary>
     private string HighlightSearchInLine(string content, int lineNumber)
     {
@@ -1356,7 +1356,7 @@ private async Task PerformSearch()
         if (!matchesInLine.Any())
             return content;
 
-        // ✅ استخراج Plain Text
+        // Extract Plain Text
         var plainText = ExtractPlainTextFromHtml(content);
 
         var result = new StringBuilder();
@@ -1364,13 +1364,13 @@ private async Task PerformSearch()
 
         foreach (var match in matchesInLine)
         {
-            // متن قبل از Match
+            // Text before Match
             if (match.StartIndex > lastIndex)
             {
                 result.Append(System.Net.WebUtility.HtmlEncode(plainText.Substring(lastIndex, match.StartIndex - lastIndex)));
             }
 
-            // Match خودش
+            // The Match itself
             var matchText = plainText.Substring(match.StartIndex, match.Length);
             var matchIndex = searchMatches.IndexOf(match);
             var isCurrent = matchIndex == currentMatchIndex;
@@ -1381,7 +1381,7 @@ private async Task PerformSearch()
             lastIndex = match.StartIndex + match.Length;
         }
 
-        // باقیمانده متن
+        // Remaining text
         if (lastIndex < plainText.Length)
         {
             result.Append(System.Net.WebUtility.HtmlEncode(plainText.Substring(lastIndex)));
@@ -1401,24 +1401,24 @@ private async Task PerformSearch()
         public int Length { get; set; }
         public string MatchedText { get; set; } = string.Empty;
         public string LineContent { get; set; } = string.Empty;
-        public string PlainText { get; set; } = string.Empty; // ✅ اضافه کن
+        public string PlainText { get; set; } = string.Empty; // Added
     }
     #endregion
 
     #region Fullscreen mode
 
     /// <summary>
-/// مدیریت تغییر وضعیت FullScreen
+/// Handle FullScreen state change
 /// </summary>
 private async Task HandleFullScreenChanged(bool isFullScreenValue)
 {
     isFullScreen = isFullScreenValue;
     StateHasChanged();
-    
-    // ✅ Sync Scroll بعد از انیمیشن FullScreen
+
+    // Sync Scroll after FullScreen animation
     if (!string.IsNullOrEmpty(JsonData))
     {
-        await Task.Delay(350); // منتظر اتمام انیمیشن
+        await Task.Delay(350); // Wait for animation to complete
         try
         {
             await jsRuntime.InvokeVoidAsync("updateScrollSync");
@@ -1436,7 +1436,7 @@ private async Task HandleFullScreenChanged(bool isFullScreenValue)
     #region Statistics Methods
 
 /// <summary>
-/// محاسبه آمار کامل JSON
+/// Calculate complete JSON statistics
 /// </summary>
 private JsonStats CalculateStatistics()
 {
@@ -1451,10 +1451,10 @@ private JsonStats CalculateStatistics()
     stats.FormattedSize = Encoding.UTF8.GetByteCount(formattedJson);
     stats.MaxDepth = CalculateMaxDepth(jsonToken);
 
-    // شمارش انواع داده‌ها
+    // Count data types
     CountTokenTypes(jsonToken, stats, 0);
 
-    // محاسبه میانگین‌ها
+    // Calculate averages
     if (stats.ObjectCount > 0)
     {
         stats.AvgPropertiesPerObject = (double)stats.TotalProperties / stats.ObjectCount;
@@ -1469,7 +1469,7 @@ private JsonStats CalculateStatistics()
 }
 
 /// <summary>
-/// شمارش انواع Token‌ها به صورت بازگشتی
+/// Count Token types recursively
 /// </summary>
 private void CountTokenTypes(JsonNode? token, JsonStats stats, int depth)
 {
@@ -1484,7 +1484,7 @@ private void CountTokenTypes(JsonNode? token, JsonStats stats, int depth)
         case JsonObject obj:
             stats.ObjectCount++;
             stats.TotalProperties += obj.Count;
-            
+
             foreach (var kvp in obj)
             {
                 CountTokenTypes(kvp.Value, stats, depth + 1);
@@ -1501,22 +1501,22 @@ private void CountTokenTypes(JsonNode? token, JsonStats stats, int depth)
 
         case JsonValue val:
             var element = val.GetValue<JsonElement>();
-            
+
             switch (element.ValueKind)
             {
                 case JsonValueKind.String:
                     stats.StringCount++;
                     break;
-                    
+
                 case JsonValueKind.Number:
                     stats.NumberCount++;
                     break;
-                    
+
                 case JsonValueKind.True:
                 case JsonValueKind.False:
                     stats.BooleanCount++;
                     break;
-                    
+
                 case JsonValueKind.Null:
                     stats.NullCount++;
                     break;
@@ -1526,7 +1526,7 @@ private void CountTokenTypes(JsonNode? token, JsonStats stats, int depth)
 }
 
 /// <summary>
-/// محاسبه حداکثر عمق JSON
+/// Calculate maximum JSON depth
 /// </summary>
 private int CalculateMaxDepth(JsonNode? token, int currentDepth = 0)
 {
@@ -1557,7 +1557,7 @@ private int CalculateMaxDepth(JsonNode? token, int currentDepth = 0)
 }
 
 /// <summary>
-/// محاسبه میانگین طول آرایه‌ها
+/// Calculate average array length
 /// </summary>
 private double CalculateAverageArrayLength(JsonNode? token)
 {
@@ -1567,7 +1567,7 @@ private double CalculateAverageArrayLength(JsonNode? token)
 }
 
 /// <summary>
-/// جمع‌آوری طول همه آرایه‌ها
+/// Collect lengths of all arrays
 /// </summary>
 private void CollectArrayLengths(JsonNode? token, List<int> lengths)
 {
@@ -1593,17 +1593,17 @@ private void CollectArrayLengths(JsonNode? token, List<int> lengths)
 }
 
 /// <summary>
-/// Toggle نمایش Statistics
+/// Toggle Statistics display
 /// </summary>
 private void ToggleStatistics()
 {
     showStatistics = !showStatistics;
-    
+
     if (showStatistics && jsonToken != null)
     {
         currentStats = CalculateStatistics();
     }
-    
+
     StateHasChanged();
 }
 
@@ -1615,19 +1615,19 @@ private async Task ShowStatistics()
 {
     if (jsonToken == null) return;
 
-    // فعال‌سازی Loading
+    // Enable Loading
     isLoading = true;
     loadingMessage = "Calculating JSON statistics...";
     StateHasChanged();
 
     try
     {
-        await Task.Delay(100); // اطمینان از Render
+        await Task.Delay(100); // Ensure render
 
-        // محاسبه آمار
+        // Calculate statistics
         currentStats = CalculateStatistics();
-        
-        // نمایش Modal
+
+        // Show Modal
         showStatistics = true;
 
         await Task.Delay(50);
@@ -1639,7 +1639,7 @@ private async Task ShowStatistics()
     }
     finally
     {
-        // غیرفعال‌سازی Loading
+        // Disable Loading
         isLoading = false;
         StateHasChanged();
     }
@@ -1699,7 +1699,7 @@ private void CloseStatistics()
         margin-bottom: 15px;
     }
 
-    /* 🎯 Layout اصلی با سه ستون */
+    /* Main Layout with three columns */
     .json-viewer-main-layout {
         display: flex;
         flex-direction: row;
@@ -1711,7 +1711,7 @@ private void CloseStatistics()
     /* ◀️ بخش چپ */
     .json-viewer-left-section {
         flex-shrink: 0;
-        width: 0; /* خالی برای استفاده آینده */
+        width: 0; /* Empty for future use */
     }
 
     /* 📄 بخش محتوای مرکزی */
@@ -1724,7 +1724,7 @@ private void CloseStatistics()
     /* 🔻 بخش پایین */
     .json-viewer-bottom-section {
         width: 100%;
-        height: 0; /* خالی برای استفاده آینده */
+        height: 0; /* Empty for future use */
     }
     /* #endregion */
 
@@ -2395,7 +2395,7 @@ private void CloseStatistics()
         background-color: rgba(255, 255, 255, 0.05);
     }
 
-    /* Hover effect برای Line Numbers */
+    /* Hover effect for Line Numbers */
     .vscode-line-number {
         transition: background-color 0.15s ease;
     }
@@ -2459,13 +2459,13 @@ private void CloseStatistics()
         transition: opacity 0.2s ease;
     }
 
-    /* حالت Idle (وقتی ماوس نزدیک نیست) */
+    /* Idle state (when mouse is not near) */
     .vscode-json-viewer:not(:hover) .vscode-json-content::-webkit-scrollbar-thumb,
     .vscode-json-viewer:not(:hover) .vscode-line-numbers::-webkit-scrollbar-thumb {
         opacity: 0.2;
     }
 
-    /* حالت Active (در حین Scroll) */
+    /* Active state (during Scroll) */
     .vscode-json-content::-webkit-scrollbar-thumb:active,
     .vscode-line-numbers::-webkit-scrollbar-thumb:active {
         opacity: 1 !important;
@@ -2477,7 +2477,7 @@ private void CloseStatistics()
         background-color: rgba(191, 191, 191, 0.8);
     }
 
-    /* انیمیشن نرم برای ظاهر شدن */
+    /* Smooth animation for appearance */
     .vscode-json-viewer {
         --scrollbar-transition-speed: 0.3s;
     }
@@ -2641,7 +2641,7 @@ private void CloseStatistics()
         animation: searchPulse 1s ease-in-out;
     }
 
-    /* برای JSON Line */
+    /* For JSON Line */
     .vscode-json-line.search-highlight-pulse {
         background-color: rgba(255, 152, 0, 0.2);
     }
@@ -2697,7 +2697,7 @@ private void CloseStatistics()
 
 /* #region FullScreen Styles */
 
-/* حالت FullScreen برای Container اصلی */
+/* FullScreen state for main Container */
 .json-viewer-container.fullscreen-active {
     position: fixed !important;
     top: 0 !important;
@@ -2711,7 +2711,7 @@ private void CloseStatistics()
     border-radius: 0 !important;
 }
 
-/* Layout اصلی در FullScreen */
+/* Main Layout in FullScreen */
 .fullscreen-active .json-viewer-main-layout {
     height: 100vh !important;
     display: flex !important;
@@ -2720,7 +2720,7 @@ private void CloseStatistics()
     gap: 0 !important;
 }
 
-/* Content Wrapper در FullScreen */
+/* Content Wrapper in FullScreen */
 .fullscreen-active .json-content-wrapper {
     flex: 1 !important;
     display: flex !important;
@@ -2729,7 +2729,7 @@ private void CloseStatistics()
     height: 100% !important;
 }
 
-/* JSON Viewer با Sidebar در FullScreen */
+/* JSON Viewer with Sidebar in FullScreen */
 .fullscreen-active .json-viewer-with-sidebar {
     flex: 1 !important;
     display: flex !important;
@@ -2738,7 +2738,7 @@ private void CloseStatistics()
     overflow: hidden !important;
 }
 
-/* Sidebar چپ در FullScreen */
+/* Left Sidebar in FullScreen */
 .fullscreen-active .json-left-sidebar {
     flex-shrink: 0 !important;
     display: flex !important;
@@ -2749,7 +2749,7 @@ private void CloseStatistics()
     overflow-y: auto !important;
 }
 
-/* Content Column در FullScreen */
+/* Content Column in FullScreen */
 .fullscreen-active .json-content-column {
     flex: 1 !important;
     display: flex !important;
@@ -2759,14 +2759,14 @@ private void CloseStatistics()
     height: 100% !important;
 }
 
-/* Top Toolbar در FullScreen */
+/* Top Toolbar in FullScreen */
 .fullscreen-active .json-top-toolbar {
     flex-shrink: 0 !important;
     padding: 8px 12px !important;
     border-radius: 6px !important;
 }
 
-/* Main Content در FullScreen */
+/* Main Content in FullScreen */
 .fullscreen-active .json-main-content {
     flex: 1 !important;
     overflow: hidden !important;
@@ -2775,7 +2775,7 @@ private void CloseStatistics()
     height: 100% !important;
 }
 
-/* VS Code Viewer در FullScreen */
+/* VS Code Viewer in FullScreen */
 .fullscreen-active .vscode-json-viewer {
     flex: 1 !important;
     height: 100% !important;
@@ -2784,14 +2784,14 @@ private void CloseStatistics()
     overflow: hidden !important;
 }
 
-/* ✅ Line Numbers در FullScreen - بدون اسکرول‌بار */
+/* Line Numbers in FullScreen - no scrollbar */
 .fullscreen-active .vscode-line-numbers {
     height: 100% !important;
     max-height: none !important;
     overflow: hidden !important;
 }
 
-/* ✅ JSON Content در FullScreen - فقط اینجا اسکرول */
+/* JSON Content in FullScreen - only scroll here */
 .fullscreen-active .vscode-json-content {
     height: 100% !important;
     max-height: none !important;
@@ -2800,7 +2800,7 @@ private void CloseStatistics()
     flex: 1 !important;
 }
 
-/* Right Section در FullScreen */
+/* Right Section in FullScreen */
 .fullscreen-active .json-viewer-right-section {
     flex-shrink: 0 !important;
     display: flex !important;
@@ -2810,20 +2810,20 @@ private void CloseStatistics()
     height: 100% !important;
 }
 
-/* Scroll Navigation Buttons در FullScreen */
+/* Scroll Navigation Buttons in FullScreen */
 .fullscreen-active .scroll-navigation-buttons {
     display: flex !important;
     flex-direction: column !important;
     gap: 8px !important;
 }
 
-/* Search Container در FullScreen */
+/* Search Container in FullScreen */
 .fullscreen-active .search-navigation-container {
     flex: 1 !important;
     max-width: 500px !important;
 }
 
-/* انیمیشن ورود به FullScreen */
+/* FullScreen enter animation */
 .json-viewer-container {
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -2843,7 +2843,7 @@ private void CloseStatistics()
     }
 }
 
-/* قفل Scroll در Body */
+/* Lock Scroll on Body */
 body.fullscreen-mode {
     overflow: hidden !important;
     position: fixed !important;

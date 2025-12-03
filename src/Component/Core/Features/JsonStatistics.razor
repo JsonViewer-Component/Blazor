@@ -317,7 +317,7 @@
         switch (format)
         {
             case ExportFormat.JSON:
-                // ✅ استفاده از System.Text.Json
+                // Using System.Text.Json
                 content = System.Text.Json.JsonSerializer.Serialize(Statistics, new System.Text.Json.JsonSerializerOptions
                 {
                     WriteIndented = true

@@ -18,19 +18,19 @@
     {
         try
         {
-            // 🔍 جستجوی تمام Session Keys حاوی 'theme'
+            // Search all session keys containing 'theme'
             var detectedTheme = await jsRuntime.InvokeAsync<string>("eval", @"
                 (function() {
-                    // اولویت 1: سشن خود کامپوننت
+                    // Priority 1: component's own session
                     const ownTheme = localStorage.getItem('json-viewer-theme');
                     if (ownTheme) return ownTheme;
 
-                    // اولویت 2: جستجو در تمام keys
+                    // Priority 2: search all keys
                     for (let i = 0; i < localStorage.length; i++) {
                         const key = localStorage.key(i);
                         if (key && (key.toLowerCase().includes('theme'))) {
                             const value = localStorage.getItem(key);
-                            // فقط مقادیر معتبر
+                            // Only valid values
                             if (value === 'light' || value === 'Light' ||
                                 value === 'dark' || value === 'Dark') {
                                 return value;
@@ -38,21 +38,21 @@
                         }
                     }
 
-                    // پیشفرض
+                    // Default
                     return 'light';
                 })()
             ");
 
-            // Normalize کردن مقدار
+            // Normalize value
             if (!string.IsNullOrEmpty(detectedTheme))
             {
                 IsDark = detectedTheme.ToLower() == "dark";
 
-                // ذخیره در سشن خود کامپوننت
+                // Save in component's own session
                 await jsRuntime.InvokeVoidAsync("localStorage.setItem",
                     "json-viewer-theme", IsDark ? "dark" : "light");
 
-                // اطلاع به JsonViewer
+                // Notify JsonViewer
                 if (OnThemeChanged.HasDelegate)
                 {
                     await OnThemeChanged.InvokeAsync(IsDark);
@@ -62,7 +62,7 @@
         catch (Exception ex)
         {
             Console.WriteLine($"Error loading theme: {ex.Message}");
-            IsDark = false; // پیشفرض light
+            IsDark = false; // Default light
         }
     }
 
@@ -73,10 +73,10 @@
 
         try
         {
-            // 🔄 آپدیت تمام Session Keys حاوی 'theme'
+            // Update all session keys containing 'theme'
             await jsRuntime.InvokeVoidAsync("eval", $@"
                 (function() {{
-                    // لیست تمام keys حاوی theme
+                    // List all keys containing theme
                     const themeKeys = [];
                     for (let i = 0; i < localStorage.length; i++) {{
                         const key = localStorage.key(i);
@@ -85,12 +85,12 @@
                         }}
                     }}
 
-                    // آپدیت همه
+                    // Update all
                     themeKeys.forEach(key => {{
                         localStorage.setItem(key, '{themeValue}');
                     }});
 
-                    // اگر سشن json-viewer-theme وجود نداشت، بسازش
+                    // If json-viewer-theme session doesn't exist, create it
                     if (!themeKeys.includes('json-viewer-theme')) {{
                         localStorage.setItem('json-viewer-theme', '{themeValue}');
                     }}
@@ -102,7 +102,7 @@
             Console.WriteLine($"Error syncing theme: {ex.Message}");
         }
 
-        // اطلاع به JsonViewer
+        // Notify JsonViewer
         if (OnThemeChanged.HasDelegate)
         {
             await OnThemeChanged.InvokeAsync(newTheme);
@@ -111,7 +111,7 @@
 
     private string GetIconName() => IsDark ? "sun-fill" : "moon-fill";
 
-    private string GetTooltip() => IsDark ? "Switch to Light Theme ☀️" : "Switch to Dark Theme 🌙";
+    private string GetTooltip() => IsDark ? "Switch to Light Theme" : "Switch to Dark Theme";
 
     private string GetThemeClass() => IsDark ? "theme-dark" : "theme-light";
 }

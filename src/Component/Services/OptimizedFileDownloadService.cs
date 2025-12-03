@@ -18,7 +18,7 @@ public class OptimizedFileDownloadService : IOptimizedFileDownloadService
         _jsRuntime = jsRuntime;
     }
 
-    // برای فایل‌های کوچک (< 5MB)
+    // For small files (< 5MB)
     public async Task DownloadFileAsync(string fileName, string content, string contentType = "text/plain")
     {
         var bytes = Encoding.UTF8.GetBytes(content);
@@ -45,13 +45,13 @@ public class OptimizedFileDownloadService : IOptimizedFileDownloadService
             ");
     }
 
-    // برای فایل‌های بزرگ (> 5MB) - با Chunking
+    // For large files (> 5MB) - with chunking
     public async Task DownloadLargeFileAsync(string fileName, string content, string contentType = "text/plain", int chunkSize = 1024 * 1024)
     {
         var bytes = Encoding.UTF8.GetBytes(content);
         var totalChunks = (int)Math.Ceiling((double)bytes.Length / chunkSize);
 
-        // ایجاد فایل در browser
+        // Create file in browser
         await _jsRuntime.InvokeVoidAsync("eval", $@"
                 window._fileChunks = [];
                 window._fileName = '{fileName}';
@@ -59,7 +59,7 @@ public class OptimizedFileDownloadService : IOptimizedFileDownloadService
                 window._totalChunks = {totalChunks};
             ");
 
-        // ارسال chunks
+        // Send chunks
         for (int i = 0; i < totalChunks; i++)
         {
             var start = i * chunkSize;
@@ -73,13 +73,13 @@ public class OptimizedFileDownloadService : IOptimizedFileDownloadService
                 ");
         }
 
-        // ترکیب و دانلود
+        // Combine and download
         await _jsRuntime.InvokeVoidAsync("eval", $@"
                 (function() {{
                     const chunks = window._fileChunks;
                     const fileName = window._fileName;
                     const contentType = window._contentType;
-                    
+
                     const arrays = chunks.map(chunk => {{
                         const binary = atob(chunk);
                         const bytes = new Uint8Array(binary.length);
@@ -88,7 +88,7 @@ public class OptimizedFileDownloadService : IOptimizedFileDownloadService
                         }}
                         return bytes;
                     }});
-                    
+
                     const totalLength = arrays.reduce((sum, arr) => sum + arr.length, 0);
                     const combined = new Uint8Array(totalLength);
                     let offset = 0;
@@ -96,7 +96,7 @@ public class OptimizedFileDownloadService : IOptimizedFileDownloadService
                         combined.set(arr, offset);
                         offset += arr.length;
                     }}
-                    
+
                     const blob = new Blob([combined], {{ type: contentType }});
                     const url = URL.createObjectURL(blob);
                     const a = document.createElement('a');
@@ -106,7 +106,7 @@ public class OptimizedFileDownloadService : IOptimizedFileDownloadService
                     a.click();
                     document.body.removeChild(a);
                     URL.revokeObjectURL(url);
-                    
+
                     delete window._fileChunks;
                     delete window._fileName;
                     delete window._contentType;
