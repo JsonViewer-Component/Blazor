@@ -73,7 +73,7 @@ jobs:
           --skip-duplicate
 
     - name: 📤 Upload NuGet Package Artifacts
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
         name: nuget-packages
         path: ./packages/*
