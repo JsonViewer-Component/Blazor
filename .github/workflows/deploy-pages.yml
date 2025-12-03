@@ -18,7 +18,7 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  DOTNET_VERSION: '7.0.x'
+  DOTNET_VERSION: '8.0.x'
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
   DOTNET_NOLOGO: true
 
@@ -51,7 +51,6 @@ jobs:
 
     - name: 🔧 Configure base path for GitHub Pages
       run: |
-        # Fix base href for GitHub Pages subdirectory
         sed -i 's|<base href="/" />|<base href="/Blazor/" />|g' release/wwwroot/index.html
         echo "✅ Base href updated to /Blazor/"
         grep "<base" release/wwwroot/index.html
