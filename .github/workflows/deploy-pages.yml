@@ -3,6 +3,9 @@ name: 🚀 Deploy to GitHub Pages
 on:
   push:
     branches: [ main ]
+    paths:
+      - 'src/**'
+      - '.github/workflows/deploy-pages.yml'
   workflow_dispatch:
 
 permissions:
@@ -26,7 +29,7 @@ jobs:
 
     steps:
     - name: 📥 Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
 
     - name: ⚙️ Setup .NET
       uses: actions/setup-dotnet@v4
@@ -46,15 +49,26 @@ jobs:
           -o release \
           --nologo
 
-    - name: 🔧 Configure base path
+    - name: 🔧 Configure base path for GitHub Pages
       run: |
-        sed -i 's/<base href="\/" \/>/<base href="\/Blazor\/" \/>/g' release/wwwroot/index.html
+        # Fix base href for GitHub Pages subdirectory
+        sed -i 's|<base href="/" />|<base href="/Blazor/" />|g' release/wwwroot/index.html
+        echo "✅ Base href updated to /Blazor/"
+        grep "<base" release/wwwroot/index.html
 
     - name: 📝 Add .nojekyll file
       run: touch release/wwwroot/.nojekyll
 
-    - name: 📝 Add custom 404.html
+    - name: 📝 Create 404.html for SPA routing
       run: cp release/wwwroot/index.html release/wwwroot/404.html
+
+    - name: 📋 List published files
+      run: |
+        echo "📂 Contents of release/wwwroot:"
+        ls -la release/wwwroot/
+
+    - name: ⚙️ Setup Pages
+      uses: actions/configure-pages@v5
 
     - name: 📤 Upload artifact
       uses: actions/upload-pages-artifact@v3
@@ -74,4 +88,3 @@ jobs:
     - name: 🌐 Deploy to GitHub Pages
       id: deployment
       uses: actions/deploy-pages@v4
-

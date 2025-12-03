@@ -4,8 +4,24 @@
     <TargetFramework>net7.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-  </PropertyGroup>
 
+    <!-- NuGet Package Configuration -->
+    <PackageId>JsonViewer.Blazor</PackageId>
+    <Version>0.0.2-beta</Version>
+    <Authors>parsapanahpoor</Authors>
+    <Company>JsonViewer-Component</Company>
+    <Product>JsonViewer.Blazor</Product>
+    <Description>A powerful JSON viewer component for Blazor with search, statistics, themes, and editing capabilities.</Description>
+    <PackageTags>blazor;json;viewer;component;wasm;webassembly;dotnet;csharp</PackageTags>
+    <PackageProjectUrl>https://github.com/JsonViewer-Component/Blazor</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/JsonViewer-Component/Blazor</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageIcon>logo.png</PackageIcon>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
 
   <ItemGroup>
     <SupportedPlatform Include="browser" />
@@ -17,6 +33,12 @@
 
   <ItemGroup>
     <Folder Include="wwwroot\" />
+  </ItemGroup>
+
+  <!-- Include files in NuGet package -->
+  <ItemGroup>
+    <None Include="..\..\README.md" Pack="true" PackagePath="\" />
+    <None Include="..\..\logo.png" Pack="true" PackagePath="\" />
   </ItemGroup>
 
 </Project>
