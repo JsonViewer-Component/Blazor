@@ -1,0 +1,20 @@
+name: "CodeQL Config"
+
+# Only analyze C# - no JavaScript
+languages:
+  - csharp
+
+# Disable auto-detection of other languages
+disable-default-queries: false
+
+queries:
+  - uses: security-extended
+  - uses: security-and-quality
+
+# Paths to exclude
+paths-ignore:
+  - '**/*.js'
+  - '**/*.ts'
+  - '**/node_modules/**'
+  - '**/wwwroot/**/*.js'
+
