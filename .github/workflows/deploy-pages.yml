@@ -18,7 +18,7 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  DOTNET_VERSION: '7.0.x'
+  DOTNET_VERSION: '9.0.x'
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
   DOTNET_NOLOGO: true
 
@@ -31,10 +31,13 @@ jobs:
     - name: 📥 Checkout
       uses: actions/checkout@v4
 
-    - name: ⚙️ Setup .NET
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: ${{ env.DOTNET_VERSION }}
+      - name: ⚙️ Setup .NET SDKs
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            9.0.x
+          dotnet-quality: 'ga'
 
     - name: 📦 Restore dependencies
       run: dotnet restore JsonViewer.Blazor.sln

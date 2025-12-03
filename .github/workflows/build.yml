@@ -7,7 +7,6 @@ on:
     branches: [ main, develop ]
 
 env:
-  DOTNET_VERSION: '7.0.x'
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
   DOTNET_NOLOGO: true
 
@@ -20,15 +19,21 @@ jobs:
     - name: 📥 Checkout
       uses: actions/checkout@v4
 
-    - name: ⚙️ Setup .NET
+    - name: ⚙️ Setup .NET SDKs
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: ${{ env.DOTNET_VERSION }}
+        dotnet-version: |
+          6.0.x
+          7.0.x
+          8.0.x
+          9.0.x
+          10.0.x
+        dotnet-quality: 'preview'
 
     - name: 📦 Restore dependencies
       run: dotnet restore JsonViewer.Blazor.sln
 
-    - name: 🏗️ Build Component
+    - name: 🏗️ Build Component (Multi-target)
       run: dotnet build src/Component/Component.csproj --no-restore --configuration Release
 
     - name: 🏗️ Build Demo
@@ -38,6 +43,13 @@ jobs:
       run: |
         echo "## 🏗️ Build Summary" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### Targets Built" >> $GITHUB_STEP_SUMMARY
+        echo "- ✅ net6.0" >> $GITHUB_STEP_SUMMARY
+        echo "- ✅ net7.0" >> $GITHUB_STEP_SUMMARY
+        echo "- ✅ net8.0" >> $GITHUB_STEP_SUMMARY
+        echo "- ✅ net9.0" >> $GITHUB_STEP_SUMMARY
+        echo "- ✅ net10.0 (Preview)" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### Projects" >> $GITHUB_STEP_SUMMARY
         echo "- **Component**: ✅ Built successfully" >> $GITHUB_STEP_SUMMARY
         echo "- **Demo**: ✅ Built successfully" >> $GITHUB_STEP_SUMMARY
-        echo "- **.NET Version**: ${{ env.DOTNET_VERSION }}" >> $GITHUB_STEP_SUMMARY
