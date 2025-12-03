@@ -2,7 +2,7 @@
 
 <div align="center">
 
-![JSON Viewer Component](https://raw.githubusercontent.com/JsonViewer-Component/Blazor/main/assets/logo.png)
+![JSON Viewer Component](https://raw.githubusercontent.com/JsonViewer-Component/Blazor/main/Documents/assets/logo.png)
 
 A powerful, feature-rich JSON viewer component for Blazor applications with VS Code-style syntax highlighting.
 
