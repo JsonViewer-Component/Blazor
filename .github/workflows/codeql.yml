@@ -7,15 +7,18 @@ on:
     branches: [ main ]
   schedule:
     - cron: '0 0 * * 1'  # Every Monday at midnight
+  workflow_dispatch:
 
 jobs:
   analyze:
-    name: 🔍 Analyze Code
+    name: 🔍 Analyze ${{ matrix.language }}
     runs-on: ubuntu-latest
+    
     permissions:
       actions: read
       contents: read
       security-events: write
+      packages: read
 
     strategy:
       fail-fast: false
@@ -23,19 +26,58 @@ jobs:
         language: [ 'csharp', 'javascript' ]
 
     steps:
+    # ========================================
+    # 1️⃣ Checkout Repository
+    # ========================================
     - name: 📥 Checkout repository
       uses: actions/checkout@v4
 
+    # ========================================
+    # 2️⃣ Setup .NET (فقط برای C#)
+    # ========================================
+    - name: 🔧 Setup .NET
+      if: matrix.language == 'csharp'
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '7.0.x'
+
+    # ========================================
+    # 3️⃣ Initialize CodeQL
+    # ========================================
     - name: ⚙️ Initialize CodeQL
-      uses: github/codeql-action/init@v2
+      uses: github/codeql-action/init@v3
       with:
         languages: ${{ matrix.language }}
         queries: security-extended,security-and-quality
 
-    - name: 🏗️ Autobuild
-      uses: github/codeql-action/autobuild@v2
+    # ========================================
+    # 4️⃣ Build Project (Manual - فقط برای C#)
+    # ========================================
+    - name: 🏗️ Build C# Projects
+      if: matrix.language == 'csharp'
+      run: |
+        echo "📦 Restoring dependencies..."
+        dotnet restore JsonViewer.Blazor.sln
+        
+        echo "🏗️ Building Component..."
+        dotnet build src/Component/Component.csproj -c Release --no-restore
+        
+        echo "🏗️ Building Demo..."
+        dotnet build src/Blazor.Demo/Blazor.Demo.csproj -c Release --no-restore
+        
+        echo "✅ Build completed"
 
+    # ========================================
+    # 5️⃣ Autobuild (فقط برای JavaScript)
+    # ========================================
+    - name: 🏗️ Autobuild JavaScript
+      if: matrix.language == 'javascript'
+      uses: github/codeql-action/autobuild@v3
+
+    # ========================================
+    # 6️⃣ Perform CodeQL Analysis
+    # ========================================
     - name: 🔍 Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v2
+      uses: github/codeql-action/analyze@v3
       with:
-        category: "/language:${{matrix.language}}"
+        category: "/language:${{ matrix.language }}"

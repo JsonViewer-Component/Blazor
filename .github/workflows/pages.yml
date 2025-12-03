@@ -36,23 +36,23 @@ jobs:
     # ========================================
     # 2️⃣ Setup .NET SDK
     # ========================================
-    - name: 🔧 Setup .NET 8.0
+    - name: 🔧 Setup .NET 7.0
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: '8.0.x'
+        dotnet-version: '7.0.x'
     
     # ========================================
     # 3️⃣ Restore NuGet packages
     # ========================================
     - name: 📦 Restore dependencies
-      run: dotnet restore samples/BlazorWasm.NET8/BlazorWasm.NET8.csproj
+      run: dotnet restore src/Blazor.Demo/Blazor.Demo.csproj
     
     # ========================================
     # 4️⃣ Publish Blazor WASM
     # ========================================
     - name: 🏗️ Publish Blazor WASM
       run: |
-        dotnet publish samples/BlazorWasm.NET8/BlazorWasm.NET8.csproj \
+        dotnet publish src/Blazor.Demo/Blazor.Demo.csproj \
           -c Release \
           -o publish \
           -p:GHPages=true \
