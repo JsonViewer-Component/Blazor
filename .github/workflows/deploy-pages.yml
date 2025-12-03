@@ -31,10 +31,13 @@ jobs:
     - name: 📥 Checkout
       uses: actions/checkout@v4
 
-    - name: ⚙️ Setup .NET
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: ${{ env.DOTNET_VERSION }}
+      - name: ⚙️ Setup .NET SDKs
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            9.0.x
+          dotnet-quality: 'ga'
 
     - name: 📦 Restore dependencies
       run: dotnet restore JsonViewer.Blazor.sln

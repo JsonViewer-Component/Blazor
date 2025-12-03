@@ -1,7 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk.Razor">
 
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <!-- 🎯 Multi-Target Frameworks                                       -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
   <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
+    <TargetFrameworks>net6.0;net7.0;net8.0;net9.0;net10.0</TargetFrameworks>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <LangVersion>latest</LangVersion>
@@ -13,7 +16,7 @@
   <PropertyGroup>
     <!-- Basic Info -->
     <PackageId>JsonViewer.Blazor</PackageId>
-    <Version>0.0.3-beta</Version>
+    <Version>0.0.4-beta</Version>
     <Title>JSON Viewer for Blazor</Title>
     <Authors>Parsa Panahpoor</Authors>
     <Company>JsonViewer-Component</Company>
@@ -37,33 +40,26 @@
 • Fully responsive design
 • High performance - handles large JSON files
 
-📦 Easy to install and use in Blazor WebAssembly and Blazor Server applications.
+📦 Supports .NET 6, .NET 7, .NET 8, .NET 9, and .NET 10!
     </Description>
 
     <!-- Summary for package manager UI -->
     <Summary>A powerful JSON viewer component for Blazor with search, statistics, themes, and editing capabilities.</Summary>
 
     <!-- Tags - Help users find your package -->
-    <PackageTags>blazor;json;viewer;component;wasm;webassembly;dotnet;csharp;razor;asp.net;json-viewer;syntax-highlighting;dark-theme;light-theme;search;export;copy;statistics;tree-view;collapsible;expandable;editor;formatter;beautifier</PackageTags>
+    <PackageTags>blazor;json;viewer;component;wasm;webassembly;dotnet;csharp;razor;asp.net;json-viewer;syntax-highlighting;dark-theme;light-theme;search;export;copy;statistics;tree-view;collapsible;expandable;editor;formatter;beautifier;net6;net7;net8;net9;net10</PackageTags>
 
     <!-- Release Notes - Shows in NuGet "Release Notes" tab -->
     <PackageReleaseNotes>
-## 🎉 Version 0.0.3-beta
+## 🎉 Version 0.0.4-beta
 
 ### ✨ New Features
-- Improved repository structure
-- Enhanced documentation
-- Better CI/CD pipeline
+- Multi-framework support: .NET 6, .NET 7, .NET 8, .NET 9, .NET 10
+- Wider compatibility for all Blazor applications
 
-### 🐛 Bug Fixes
-- Fixed Persian comments translated to English
-- Fixed workflow issues
-- Improved code quality
-
-### 📚 Documentation
-- Reorganized project structure
-- Updated all documentation to English
-- Added comprehensive CHANGELOG
+### 🔧 Changes
+- Updated to support multiple .NET versions
+- Optimized dependencies for each framework
 
 For full changelog, visit: https://github.com/JsonViewer-Component/Blazor/blob/main/docs/CHANGELOG.md
     </PackageReleaseNotes>
@@ -107,14 +103,39 @@ For full changelog, visit: https://github.com/JsonViewer-Component/Blazor/blob/m
   </PropertyGroup>
 
   <!-- ═══════════════════════════════════════════════════════════════ -->
-  <!-- 📚 Dependencies                                                  -->
+  <!-- 📚 Dependencies - Conditional per Framework                      -->
   <!-- ═══════════════════════════════════════════════════════════════ -->
   <ItemGroup>
     <SupportedPlatform Include="browser" />
   </ItemGroup>
 
-  <ItemGroup>
+  <!-- .NET 6 -->
+  <ItemGroup Condition="'$(TargetFramework)' == 'net6.0'">
+    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="6.0.36" />
+  </ItemGroup>
+
+  <!-- .NET 7 -->
+  <ItemGroup Condition="'$(TargetFramework)' == 'net7.0'">
     <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="7.0.20" />
+  </ItemGroup>
+
+  <!-- .NET 8 -->
+  <ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
+    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="8.0.11" />
+  </ItemGroup>
+
+  <!-- .NET 9 -->
+  <ItemGroup Condition="'$(TargetFramework)' == 'net9.0'">
+    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="9.0.0" />
+  </ItemGroup>
+
+  <!-- .NET 10 (Preview) -->
+  <ItemGroup Condition="'$(TargetFramework)' == 'net10.0'">
+    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="10.0.0-preview.4.25258.110" />
+  </ItemGroup>
+
+  <!-- Shared Dependencies -->
+  <ItemGroup>
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
   </ItemGroup>
 
