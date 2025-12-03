@@ -1,125 +1,227 @@
-# GitHub Workflows & Automation
+# 🚀 JSON Viewer Component for Blazor
 
-This directory contains all GitHub Actions workflows and automation configurations for JsonViewer.Blazor.
+<div align="center">
 
-## 📁 Directory Structure
+![JSON Viewer Component](https://raw.githubusercontent.com/JsonViewer-Component/Blazor/main/logo.png)
 
+A powerful, feature-rich JSON viewer component for Blazor applications with VS Code-style syntax highlighting.
+
+[![NuGet Version](https://img.shields.io/nuget/v/JsonViewer.Blazor?style=flat-square&logo=nuget)](https://www.nuget.org/packages/JsonViewer.Blazor/)
+[![NuGet Downloads](https://img.shields.io/nuget/dt/JsonViewer.Blazor?style=flat-square&logo=nuget)](https://www.nuget.org/packages/JsonViewer.Blazor/)
+[![GitHub Stars](https://img.shields.io/github/stars/JsonViewer-Component/Blazor?style=flat-square&logo=github)](https://github.com/JsonViewer-Component/Blazor)
+[![License](https://img.shields.io/github/license/JsonViewer-Component/Blazor?style=flat-square)](https://github.com/JsonViewer-Component/Blazor/blob/main/LICENSE)
+
+[Demo](https://jsonviewer-component.github.io/Blazor/) | [Documentation](https://github.com/JsonViewer-Component/Blazor#readme) | [Report Bug](https://github.com/JsonViewer-Component/Blazor/issues) | [Request Feature](https://github.com/JsonViewer-Component/Blazor/issues)
+
+</div>
+
+---
+
+## ✨ Features
+
+- 🎨 **VS Code-style** syntax highlighting
+- 🌓 **Dark & Light** theme support with persistence
+- 🔍 **Real-time search** with match highlighting and navigation
+- 📊 **JSON statistics** (size, depth, type distribution)
+- 📝 **Edit mode** with auto-formatting and validation
+- 📋 **Copy & Export** functionality
+- ⌨️ **Keyboard shortcuts** (Enter, Shift+Enter for search navigation)
+- 🔢 **Line numbers** with active line highlighting
+- 🎯 **Expand/Collapse** individual or all nodes
+- 📱 **Fully responsive** design for mobile, tablet, and desktop
+- ⚡ **High performance** - handles large JSON files efficiently
+- 🎭 **Smooth animations** and transitions
+
+---
+
+## 📦 Installation
+
+Install via NuGet Package Manager:
+```bash
+dotnet add package JsonViewer.Blazor
 ```
-.github/
-├── workflows/              # CI/CD workflows
-│   ├── build.yml          # Build & test on PR/push
-│   ├── deploy-pages.yml   # Deploy demo to GitHub Pages
-│   ├── nuget-publish.yml  # Publish to NuGet
-│   ├── codeql.yml         # Security analysis
-│   ├── labeler.yml        # Auto-label PRs
-│   ├── greet-new-contributors.yml
-│   └── stale.yml          # Mark stale issues
-├── ISSUE_TEMPLATE/        # Issue templates
-│   ├── bug_report.yml
-│   ├── feature_request.yml
-│   ├── question.yml
-│   └── config.yml
-├── DISCUSSION_TEMPLATE/   # Discussion templates
-│   └── ideas.yml
-├── PULL_REQUEST_TEMPLATE.md
-├── FUNDING.yml            # Sponsor configuration
-├── dependabot.yml         # Dependency updates
-└── labeler.yml            # Label configuration
+Or via Package Manager Console:
+
+```powershell
+Install-Package JsonViewer.Blazor
 ```
+---
 
-## 🔄 Workflows
+## 🚀 Quick Start
 
-### Build & Test (`build.yml`)
-- **Trigger**: Push to main/develop, Pull requests
-- **Actions**:
-  - Restore dependencies
-  - Build solution
-  - Run tests
-  - Code coverage
-  - Format check
-  - Code analysis
+### 1️⃣ Add namespace to `_Imports.razor`:
 
-### Deploy GitHub Pages (`deploy-pages.yml`)
-- **Trigger**: Push to main, Manual
-- **Actions**:
-  - Build Blazor WASM
-  - Configure base path
-  - Deploy to GitHub Pages
+```razor
+@using JsonViewerComponent
+@using JsonViewerComponent.Components
+```
+### 2️⃣ Use in your component:
 
-### Publish to NuGet (`nuget-publish.yml`)
-- **Trigger**: Release published, Manual
-- **Actions**:
-  - Build & test
-  - Create NuGet package
-  - Publish to NuGet.org
+```razor
+@page "/json-demo"
 
-### CodeQL Security (`codeql.yml`)
-- **Trigger**: Push, PR, Weekly schedule
-- **Actions**:
-  - Security analysis
-  - Vulnerability scanning
-  - Code quality checks
+<JsonViewer JsonData="@jsonString" IsEditable="true" />
 
-### Auto Labeler (`labeler.yml`)
-- **Trigger**: Pull request
-- **Actions**:
-  - Auto-label based on file changes
+@code {
+private string jsonString = @"{
+""name"": ""John Doe"",
+""age"": 30,
+""email"": ""john.doe@example.com"",
+""hobbies"": [""reading"", ""gaming"", ""coding""]
+}";
+}
+```
+---
 
-### Greet Contributors (`greet-new-contributors.yml`)
-- **Trigger**: First issue/PR
-- **Actions**:
-  - Welcome message
-  - Helpful resources
+## 📖 Usage Examples
 
-### Stale Management (`stale.yml`)
-- **Trigger**: Daily schedule
-- **Actions**:
-  - Mark stale issues/PRs
-  - Close inactive items
+### Read-Only Mode
 
-## 🔐 Secrets Required
+```razor
+<JsonViewer JsonData="@jsonData" IsEditable="false" />
+```
+### Editable Mode with Two-Way Binding
 
-The following secrets need to be configured in repository settings:
+```razor
+<JsonViewer @bind-JsonData="jsonData" IsEditable="true" />
 
-- `NUGET_API_KEY` - For publishing to NuGet.org
+@code {
+private string jsonData = "{}";
+}
+```
+### Dynamic JSON Loading
 
-## 🏷️ Labels
+```razor
+<button @onclick="LoadSampleData">Load Sample</button>
+<JsonViewer JsonData="@jsonData" IsEditable="true" />
 
-Labels are automatically applied based on:
-- File changes (component, demo, docs, etc.)
-- Issue/PR type (bug, feature, question)
-- Status (stale, in-progress, etc.)
+@code {
+private string jsonData = "";
 
-## 📋 Issue & PR Templates
+private void LoadSampleData()
+{
+jsonData = @"{""userId"": 1, ""userName"": ""Alice""}";
+}
+}
+```
+---
 
-### Issue Templates
-- **Bug Report**: Detailed bug reporting with environment info
-- **Feature Request**: Feature suggestions with priority
-- **Question**: Ask questions about usage
+## ⌨️ Keyboard Shortcuts
 
-### Pull Request Template
-- Comprehensive checklist
-- Code quality requirements
-- Testing requirements
-- Documentation requirements
+| Shortcut | Action |
+|----------|--------|
+| `Enter` | Navigate to next search match |
+| `Shift + Enter` | Navigate to previous search match |
+| `Escape` | Clear search (when search is active) |
+
+---
+
+## 🎨 Theme Support
+
+The component automatically saves your theme preference to localStorage:
+
+```razor
+@* Theme persists across page refreshes *@
+<JsonViewer JsonData="@jsonData" IsEditable="true" />
+```
+---
+
+## 📊 JSON Statistics
+
+View detailed statistics about your JSON:
+
+- **Total Size** (bytes)
+- **Total Properties**
+- **Object Count**
+- **Array Count**
+- **Max Depth**
+- **Average Array Length**
+
+Access statistics via the stats button in the sidebar.
+
+---
+
+## 🔍 Search Features
+
+- **Real-time highlighting** of all matches
+- **Match counter** showing current match / total matches
+- **Navigation buttons** to jump between matches
+- **Keyboard support** for quick navigation
+- **Case-insensitive** search
+
+---
+
+## 🛠️ Configuration
+
+Currently, the component works out-of-the-box with minimal configuration. Future versions will support:
+
+- Custom themes
+- Plugin system
+- Additional export formats
+- And more!
+
+---
 
 ## 🤝 Contributing
 
-See the main [CONTRIBUTING.md](../CONTRIBUTING.md) for guidelines.
+We welcome contributions! Here's how you can help:
 
-## 🔄 Workflow Badges
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
-Add these to your README:
+Please read our [Contributing Guide](https://github.com/JsonViewer-Component/Blazor/blob/main/CONTRIBUTING.md) for more details.
 
-```markdown
-[![Build Status](https://github.com/JsonViewer-Component/Blazor/actions/workflows/build.yml/badge.svg)](https://github.com/JsonViewer-Component/Blazor/actions/workflows/build.yml)
-[![Deploy Pages](https://github.com/JsonViewer-Component/Blazor/actions/workflows/deploy-pages.yml/badge.svg)](https://github.com/JsonViewer-Component/Blazor/actions/workflows/deploy-pages.yml)
-[![CodeQL](https://github.com/JsonViewer-Component/Blazor/actions/workflows/codeql.yml/badge.svg)](https://github.com/JsonViewer-Component/Blazor/actions/workflows/codeql.yml)
-```
+---
 
-## 📞 Support
+## 🐛 Bug Reports & Feature Requests
 
-If you have questions about workflows or need help with automation:
-- 💬 [GitHub Discussions](https://github.com/JsonViewer-Component/Blazor/discussions)
-- 📧 Email: ci-cd@jsonviewer-component.com
+Found a bug or have an idea? Please open an issue:
 
+- [Report a Bug](https://github.com/JsonViewer-Component/Blazor/issues/new?labels=bug)
+- [Request a Feature](https://github.com/JsonViewer-Component/Blazor/issues/new?labels=enhancement)
+
+---
+
+## 📜 License
+
+This project is licensed under the MIT License - see the [LICENSE](https://github.com/JsonViewer-Component/Blazor/blob/main/LICENSE) file for details.
+
+---
+
+## 💖 Support
+
+If you find this project helpful, please consider:
+
+- ⭐ **Starring** the repository
+- 🐛 **Reporting bugs** or **suggesting features**
+- 📢 **Sharing** with others
+- ☕ **Sponsoring** the project
+
+---
+
+## 👨‍💻 Author
+
+**Parsa Panahpoor**
+
+- GitHub: [@parsapanahpoor](https://github.com/parsapanahpoor)
+- Website: [Your Website](https://your-website.com)
+
+---
+
+## 🌟 Acknowledgments
+
+Special thanks to all contributors and the Blazor community!
+
+---
+
+<div align="center">
+
+Made with ❤️ by [JsonViewer Component](https://github.com/JsonViewer-Component)
+
+</div>
+
+
+---
