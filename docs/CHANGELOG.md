@@ -9,6 +9,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!-- Future changes go here -->
 
+## [0.0.4-beta] - 2025-12-03
+
+### ✨ Added
+- **Multi-framework support**: Now supports .NET 6, .NET 7, .NET 8, .NET 9, and .NET 10!
+- Wider compatibility for all Blazor applications
+
+### 🔧 Changed
+- Updated SDK to .NET 9
+- Demo application upgraded to .NET 8 (LTS)
+- Conditional dependencies for each target framework
+
+### 📦 Supported Frameworks
+| Framework | Status |
+|-----------|--------|
+| .NET 6.0 | ✅ Supported |
+| .NET 7.0 | ✅ Supported |
+| .NET 8.0 | ✅ Supported (LTS) |
+| .NET 9.0 | ✅ Supported |
+| .NET 10.0 | ✅ Supported (Preview) |
+
 ## [0.0.3-beta] - 2025-12-03
 
 ### ✨ Added
@@ -150,7 +170,8 @@ See [CONTRIBUTING.md](../.github/CONTRIBUTING.md) for details on how to contribu
 - 🔒 Security - Security fixes
 - 📚 Documentation - Documentation changes
 
-[Unreleased]: https://github.com/JsonViewer-Component/Blazor/compare/v0.0.3-beta...HEAD
+[Unreleased]: https://github.com/JsonViewer-Component/Blazor/compare/v0.0.4-beta...HEAD
+[0.0.4-beta]: https://github.com/JsonViewer-Component/Blazor/compare/v0.0.3-beta...v0.0.4-beta
 [0.0.3-beta]: https://github.com/JsonViewer-Component/Blazor/compare/v0.0.2-beta...v0.0.3-beta
 [0.0.2-beta]: https://github.com/JsonViewer-Component/Blazor/compare/v0.0.1-beta...v0.0.2-beta
 [0.0.1-beta]: https://github.com/JsonViewer-Component/Blazor/releases/tag/v0.0.1-beta
