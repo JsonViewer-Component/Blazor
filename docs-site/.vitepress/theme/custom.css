@@ -1,0 +1,288 @@
+/* ═══════════════════════════════════════════════════════════════ */
+/* 🎨 Custom Theme for JsonViewer.Blazor Documentation             */
+/* ═══════════════════════════════════════════════════════════════ */
+
+:root {
+  /* Brand Colors - Vibrant Purple/Indigo Theme */
+  --vp-c-brand-1: #6366f1;
+  --vp-c-brand-2: #818cf8;
+  --vp-c-brand-3: #4f46e5;
+  --vp-c-brand-soft: rgba(99, 102, 241, 0.14);
+
+  /* Custom accent colors */
+  --vp-c-accent: #f472b6;
+  --vp-c-success: #10b981;
+  --vp-c-warning: #f59e0b;
+  --vp-c-danger: #ef4444;
+
+  /* Home page hero gradient */
+  --vp-home-hero-name-color: transparent;
+  --vp-home-hero-name-background: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%);
+
+  --vp-home-hero-image-background-image: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%);
+  --vp-home-hero-image-filter: blur(56px) saturate(150%);
+}
+
+.dark {
+  --vp-c-brand-1: #818cf8;
+  --vp-c-brand-2: #a5b4fc;
+  --vp-c-brand-3: #6366f1;
+
+  --vp-home-hero-image-background-image: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%);
+}
+
+/* ═══════════════════════════════════════════════════════════════ */
+/* 🏠 Home Page Enhancements                                        */
+/* ═══════════════════════════════════════════════════════════════ */
+
+.VPHero .name {
+  font-size: 4rem !important;
+  font-weight: 900 !important;
+  letter-spacing: -0.02em;
+}
+
+.VPHero .text {
+  font-size: 1.5rem !important;
+  color: var(--vp-c-text-2);
+  max-width: 600px;
+}
+
+.VPHero .tagline {
+  font-size: 1.2rem !important;
+  line-height: 1.6;
+}
+
+/* Hero image glow effect */
+.VPHero .image-container {
+  position: relative;
+}
+
+.VPHero .image-container::before {
+  content: '';
+  position: absolute;
+  inset: -20px;
+  background: var(--vp-home-hero-image-background-image);
+  filter: blur(80px);
+  opacity: 0.4;
+  z-index: -1;
+  border-radius: 50%;
+  animation: pulse 4s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.4; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(1.05); }
+}
+
+/* ═══════════════════════════════════════════════════════════════ */
+/* 🎴 Feature Cards                                                 */
+/* ═══════════════════════════════════════════════════════════════ */
+
+.VPFeature {
+  transition: all 0.3s ease;
+  border: 1px solid var(--vp-c-divider);
+}
+
+.VPFeature:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(99, 102, 241, 0.15);
+  border-color: var(--vp-c-brand-1);
+}
+
+.VPFeature .icon {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.VPFeature .title {
+  font-weight: 700 !important;
+  background: linear-gradient(135deg, var(--vp-c-brand-1), var(--vp-c-brand-2));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ═══════════════════════════════════════════════════════════════ */
+/* 📝 Content Styling                                               */
+/* ═══════════════════════════════════════════════════════════════ */
+
+/* Code blocks */
+.vp-doc div[class*='language-'] {
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.dark .vp-doc div[class*='language-'] {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* Inline code */
+.vp-doc :not(pre) > code {
+  background: var(--vp-c-brand-soft);
+  color: var(--vp-c-brand-1);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+/* Links */
+.vp-doc a {
+  text-decoration: none;
+  border-bottom: 1px solid var(--vp-c-brand-soft);
+  transition: all 0.2s ease;
+}
+
+.vp-doc a:hover {
+  border-bottom-color: var(--vp-c-brand-1);
+}
+
+/* Headers */
+.vp-doc h1 {
+  background: linear-gradient(135deg, var(--vp-c-brand-1), var(--vp-c-brand-2));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Blockquotes */
+.vp-doc blockquote {
+  border-left: 4px solid var(--vp-c-brand-1);
+  background: var(--vp-c-brand-soft);
+  border-radius: 0 8px 8px 0;
+  padding: 1rem 1.5rem;
+}
+
+/* Tables */
+.vp-doc table {
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.vp-doc th {
+  background: var(--vp-c-brand-soft) !important;
+  font-weight: 700;
+}
+
+/* ═══════════════════════════════════════════════════════════════ */
+/* 🎯 Custom Containers                                             */
+/* ═══════════════════════════════════════════════════════════════ */
+
+.custom-block {
+  border-radius: 12px;
+  padding: 1.5rem;
+}
+
+.custom-block.tip {
+  border-color: var(--vp-c-success);
+  background: rgba(16, 185, 129, 0.1);
+}
+
+.custom-block.warning {
+  border-color: var(--vp-c-warning);
+  background: rgba(245, 158, 11, 0.1);
+}
+
+.custom-block.danger {
+  border-color: var(--vp-c-danger);
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.custom-block.info {
+  border-color: var(--vp-c-brand-1);
+  background: var(--vp-c-brand-soft);
+}
+
+/* ═══════════════════════════════════════════════════════════════ */
+/* 🧭 Navigation                                                    */
+/* ═══════════════════════════════════════════════════════════════ */
+
+.VPNavBar {
+  backdrop-filter: blur(12px) saturate(150%);
+}
+
+.VPNavBarTitle .title {
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--vp-c-brand-1), var(--vp-c-brand-2));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Sidebar */
+.VPSidebar {
+  backdrop-filter: blur(8px);
+}
+
+.VPSidebarItem.is-active > .item > .link > .text {
+  color: var(--vp-c-brand-1) !important;
+  font-weight: 700;
+}
+
+/* ═══════════════════════════════════════════════════════════════ */
+/* 🔘 Buttons                                                       */
+/* ═══════════════════════════════════════════════════════════════ */
+
+.VPButton.brand {
+  background: linear-gradient(135deg, var(--vp-c-brand-1), var(--vp-c-brand-3));
+  border: none;
+  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.4);
+  transition: all 0.3s ease;
+}
+
+.VPButton.brand:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.5);
+}
+
+.VPButton.alt {
+  border: 2px solid var(--vp-c-brand-1);
+  color: var(--vp-c-brand-1);
+  transition: all 0.3s ease;
+}
+
+.VPButton.alt:hover {
+  background: var(--vp-c-brand-soft);
+  transform: translateY(-2px);
+}
+
+/* ═══════════════════════════════════════════════════════════════ */
+/* 📱 Responsive                                                    */
+/* ═══════════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  .VPHero .name {
+    font-size: 2.5rem !important;
+  }
+
+  .VPHero .text {
+    font-size: 1.2rem !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════ */
+/* ✨ Animations                                                    */
+/* ═══════════════════════════════════════════════════════════════ */
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.VPContent {
+  animation: fadeInUp 0.5s ease-out;
+}
+
+/* Badge styling */
+.VPBadge {
+  background: linear-gradient(135deg, var(--vp-c-brand-1), var(--vp-c-brand-2));
+  color: white;
+  font-weight: 600;
+}
+

@@ -1,54 +1,138 @@
 ﻿@page "/"
 
-<PageTitle>JSON Viewer Component - Demo</PageTitle>
+<PageTitle>JSON Viewer Component - Live Demo</PageTitle>
 
-<div class="container-fluid mt-4">
-    <div class="row">
-        <div class="col-12">
-            <h1 class="text-center mb-4">
-                🚀 JSON Viewer Component
-            </h1>
-            <p class="text-center text-muted mb-4">
-                A powerful JSON viewer for Blazor with search, statistics, and more!
-            </p>
-        </div>
-    </div>
-
-    <div class="row">
-        <div class="col-12">
-            <JsonViewer JsonData="@sampleJson" IsEditable="true" />
-        </div>
-    </div>
-
-    <div class="row mt-4">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0">📚 Sample JSON Templates</h5>
-                </div>
-                <div class="card-body">
-                    <div class="btn-group" role="group">
-                        <button class="btn btn-outline-primary" @onclick="LoadSimpleJson">
-                            Simple Object
-                        </button>
-                        <button class="btn btn-outline-primary" @onclick="LoadNestedJson">
-                            Nested Object
-                        </button>
-                        <button class="btn btn-outline-primary" @onclick="LoadArrayJson">
-                            Array Data
-                        </button>
-                        <button class="btn btn-outline-primary" @onclick="LoadComplexJson">
-                            Complex Data
-                        </button>
-                    </div>
+<div class="demo-container">
+    @* ═══════════════════════════════════════════════════════════════ *@
+    @* Header Section                                                   *@
+    @* ═══════════════════════════════════════════════════════════════ *@
+    <header class="demo-header">
+        <div class="header-content">
+            <div class="logo-section">
+                <span class="logo-icon">🔍</span>
+                <div class="logo-text">
+                    <h1>JsonViewer<span class="highlight">.Blazor</span></h1>
+                    <p class="tagline">A powerful JSON viewer component for Blazor applications</p>
                 </div>
             </div>
+
+            <nav class="header-nav">
+                <a href="https://jsonviewer-component.github.io/Blazor/docs/" target="_blank" class="nav-link docs-link">
+                    <span class="nav-icon">📚</span>
+                    <span>Documentation</span>
+                </a>
+                <a href="https://github.com/JsonViewer-Component/Blazor" target="_blank" class="nav-link github-link">
+                    <span class="nav-icon">⭐</span>
+                    <span>GitHub</span>
+                </a>
+                <a href="https://www.nuget.org/packages/JsonViewer.Blazor" target="_blank" class="nav-link nuget-link">
+                    <span class="nav-icon">📦</span>
+                    <span>NuGet</span>
+                </a>
+            </nav>
         </div>
-    </div>
+
+        <div class="badges">
+            <img src="https://img.shields.io/nuget/v/JsonViewer.Blazor?style=flat-square&logo=nuget&color=6366f1" alt="NuGet Version" />
+            <img src="https://img.shields.io/nuget/dt/JsonViewer.Blazor?style=flat-square&logo=nuget&color=a855f7" alt="NuGet Downloads" />
+            <img src="https://img.shields.io/github/stars/JsonViewer-Component/Blazor?style=flat-square&logo=github&color=ec4899" alt="GitHub Stars" />
+        </div>
+    </header>
+
+    @* ═══════════════════════════════════════════════════════════════ *@
+    @* Main Component Demo                                              *@
+    @* ═══════════════════════════════════════════════════════════════ *@
+    <main class="demo-main">
+        <div class="viewer-wrapper">
+            <JsonViewer JsonData="@sampleJson" IsEditable="true" />
+        </div>
+    </main>
+
+    @* ═══════════════════════════════════════════════════════════════ *@
+    @* Sample Templates                                                 *@
+    @* ═══════════════════════════════════════════════════════════════ *@
+    <section class="templates-section">
+        <h3 class="section-title">
+            <span class="section-icon">📋</span>
+            Try Sample Data
+        </h3>
+        <div class="template-buttons">
+            <button class="template-btn @(activeTemplate == "simple" ? "active" : "")" @onclick="LoadSimpleJson">
+                <span class="btn-icon">📄</span>
+                <span class="btn-text">Simple</span>
+            </button>
+            <button class="template-btn @(activeTemplate == "nested" ? "active" : "")" @onclick="LoadNestedJson">
+                <span class="btn-icon">📁</span>
+                <span class="btn-text">Nested</span>
+            </button>
+            <button class="template-btn @(activeTemplate == "array" ? "active" : "")" @onclick="LoadArrayJson">
+                <span class="btn-icon">📊</span>
+                <span class="btn-text">Array</span>
+            </button>
+            <button class="template-btn @(activeTemplate == "complex" ? "active" : "")" @onclick="LoadComplexJson">
+                <span class="btn-icon">🏢</span>
+                <span class="btn-text">Complex</span>
+            </button>
+        </div>
+    </section>
+
+    @* ═══════════════════════════════════════════════════════════════ *@
+    @* Features Section                                                 *@
+    @* ═══════════════════════════════════════════════════════════════ *@
+    <section class="features-section">
+        <h3 class="section-title">
+            <span class="section-icon">✨</span>
+            Features
+        </h3>
+        <div class="features-grid">
+            <div class="feature-card">
+                <span class="feature-icon">🎨</span>
+                <h4>VS Code Styling</h4>
+                <p>Beautiful syntax highlighting</p>
+            </div>
+            <div class="feature-card">
+                <span class="feature-icon">🔍</span>
+                <h4>Search</h4>
+                <p>Real-time search with navigation</p>
+            </div>
+            <div class="feature-card">
+                <span class="feature-icon">📊</span>
+                <h4>Statistics</h4>
+                <p>Size, depth, type distribution</p>
+            </div>
+            <div class="feature-card">
+                <span class="feature-icon">🌙</span>
+                <h4>Themes</h4>
+                <p>Dark & Light with persistence</p>
+            </div>
+            <div class="feature-card">
+                <span class="feature-icon">✏️</span>
+                <h4>Edit Mode</h4>
+                <p>Modify JSON with validation</p>
+            </div>
+            <div class="feature-card">
+                <span class="feature-icon">📥</span>
+                <h4>Export</h4>
+                <p>Copy & download JSON</p>
+            </div>
+        </div>
+    </section>
+
+    @* ═══════════════════════════════════════════════════════════════ *@
+    @* Footer                                                           *@
+    @* ═══════════════════════════════════════════════════════════════ *@
+    <footer class="demo-footer">
+        <p>
+            Made with ❤️ by
+            <a href="https://github.com/JsonViewer-Component" target="_blank">JsonViewer-Component</a>
+        </p>
+        <p class="version">v0.0.4-beta • MIT License</p>
+    </footer>
 </div>
 
 @code {
     private string sampleJson = string.Empty;
+    private string activeTemplate = "simple";
 
     protected override void OnInitialized()
     {
@@ -57,88 +141,125 @@
 
     private void LoadSimpleJson()
     {
+        activeTemplate = "simple";
         sampleJson = @"{
   ""name"": ""John Doe"",
   ""age"": 30,
   ""email"": ""john@example.com"",
-  ""active"": true
+  ""active"": true,
+  ""balance"": 1250.50
 }";
     }
 
     private void LoadNestedJson()
     {
+        activeTemplate = "nested";
         sampleJson = @"{
   ""user"": {
     ""id"": 1,
     ""name"": ""Jane Smith"",
+    ""profile"": {
+      ""avatar"": ""https://example.com/avatar.png"",
+      ""bio"": ""Software Developer""
+    },
     ""address"": {
       ""street"": ""123 Main St"",
       ""city"": ""New York"",
-      ""country"": ""USA""
+      ""country"": ""USA"",
+      ""zipCode"": ""10001""
     }
   },
-  ""timestamp"": ""2025-11-19T10:30:00Z""
+  ""settings"": {
+    ""theme"": ""dark"",
+    ""notifications"": true
+  },
+  ""timestamp"": ""2025-12-03T10:30:00Z""
 }";
     }
 
     private void LoadArrayJson()
     {
+        activeTemplate = "array";
         sampleJson = @"{
   ""products"": [
     {
       ""id"": 1,
-      ""name"": ""Laptop"",
-      ""price"": 999.99
+      ""name"": ""MacBook Pro"",
+      ""price"": 2499.99,
+      ""inStock"": true
     },
     {
       ""id"": 2,
-      ""name"": ""Mouse"",
-      ""price"": 29.99
+      ""name"": ""Magic Mouse"",
+      ""price"": 99.99,
+      ""inStock"": true
     },
     {
       ""id"": 3,
-      ""name"": ""Keyboard"",
-      ""price"": 79.99
+      ""name"": ""AirPods Pro"",
+      ""price"": 249.99,
+      ""inStock"": false
     }
-  ]
+  ],
+  ""total"": 3,
+  ""currency"": ""USD""
 }";
     }
 
     private void LoadComplexJson()
     {
+        activeTemplate = "complex";
         sampleJson = @"{
   ""company"": {
-    ""name"": ""Tech Corp"",
+    ""name"": ""Tech Innovations Inc."",
     ""founded"": 2010,
+    ""public"": true,
     ""employees"": [
       {
         ""id"": 1,
-        ""name"": ""Alice"",
-        ""department"": ""Engineering"",
-        ""skills"": [""C#"", ""Blazor"", ""Azure""]
+        ""name"": ""Alice Johnson"",
+        ""role"": ""CEO"",
+        ""department"": ""Executive"",
+        ""skills"": [""Leadership"", ""Strategy"", ""Finance""]
       },
       {
         ""id"": 2,
-        ""name"": ""Bob"",
-        ""department"": ""Marketing"",
-        ""skills"": [""SEO"", ""Content"", ""Analytics""]
+        ""name"": ""Bob Williams"",
+        ""role"": ""CTO"",
+        ""department"": ""Engineering"",
+        ""skills"": [""C#"", ""Blazor"", ""Azure"", ""Architecture""]
+      },
+      {
+        ""id"": 3,
+        ""name"": ""Carol Davis"",
+        ""role"": ""Lead Designer"",
+        ""department"": ""Design"",
+        ""skills"": [""UI/UX"", ""Figma"", ""CSS""]
       }
     ],
     ""offices"": {
       ""headquarters"": {
         ""city"": ""San Francisco"",
-        ""country"": ""USA""
+        ""country"": ""USA"",
+        ""employees"": 150
       },
       ""branches"": [
         {
           ""city"": ""London"",
-          ""country"": ""UK""
+          ""country"": ""UK"",
+          ""employees"": 45
         },
         {
           ""city"": ""Tokyo"",
-          ""country"": ""Japan""
+          ""country"": ""Japan"",
+          ""employees"": 30
         }
       ]
+    },
+    ""financials"": {
+      ""revenue"": 50000000,
+      ""profit"": 8500000,
+      ""growth"": 0.23
     }
   }
 }";

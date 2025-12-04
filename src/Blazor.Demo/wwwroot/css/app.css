@@ -1,111 +1,454 @@
-@import url('open-iconic/font/css/open-iconic-bootstrap.min.css');
+/* ═══════════════════════════════════════════════════════════════════════════ */
+/* 🎨 JsonViewer.Blazor Demo - Custom Styles                                    */
+/* ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ─────────────────────────────────────────────────────────────────────────── */
+/* CSS Variables                                                                */
+/* ─────────────────────────────────────────────────────────────────────────── */
+:root {
+    --primary: #6366f1;
+    --primary-dark: #4f46e5;
+    --secondary: #a855f7;
+    --accent: #ec4899;
+    --bg-dark: #0f0f1a;
+    --bg-card: #1a1a2e;
+    --bg-card-hover: #252540;
+    --text-primary: #ffffff;
+    --text-secondary: #a0a0b0;
+    --border-color: #2d2d4a;
+    --gradient-primary: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%);
+    --shadow-glow: 0 0 40px rgba(99, 102, 241, 0.3);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────── */
+/* Reset & Base                                                                 */
+/* ─────────────────────────────────────────────────────────────────────────── */
+*, *::before, *::after {
+    box-sizing: border-box;
+}
 
 html, body {
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg-dark);
+    color: var(--text-primary);
+    min-height: 100vh;
 }
 
-h1:focus {
-    outline: none;
+#app {
+    min-height: 100vh;
 }
 
-a, .btn-link {
-    color: #0071c1;
-}
-
-.btn-primary {
-    color: #fff;
-    background-color: #1b6ec2;
-    border-color: #1861ac;
-}
-
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
-}
-
-.content {
-    padding-top: 1.1rem;
-}
-
-.valid.modified:not([type=checkbox]) {
-    outline: 1px solid #26b050;
-}
-
-.invalid {
-    outline: 1px solid red;
-}
-
-.validation-message {
-    color: red;
-}
-
-#blazor-error-ui {
-    background: lightyellow;
-    bottom: 0;
-    box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.2);
-    display: none;
-    left: 0;
-    padding: 0.6rem 1.25rem 0.7rem 1.25rem;
-    position: fixed;
-    width: 100%;
-    z-index: 1000;
-}
-
-    #blazor-error-ui .dismiss {
-        cursor: pointer;
-        position: absolute;
-        right: 0.75rem;
-        top: 0.5rem;
-    }
-
-.blazor-error-boundary {
-    background: url(data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTYiIGhlaWdodD0iNDkiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIG92ZXJmbG93PSJoaWRkZW4iPjxkZWZzPjxjbGlwUGF0aCBpZD0iY2xpcDAiPjxyZWN0IHg9IjIzNSIgeT0iNTEiIHdpZHRoPSI1NiIgaGVpZ2h0PSI0OSIvPjwvY2xpcFBhdGg+PC9kZWZzPjxnIGNsaXAtcGF0aD0idXJsKCNjbGlwMCkiIHRyYW5zZm9ybT0idHJhbnNsYXRlKC0yMzUgLTUxKSI+PHBhdGggZD0iTTI2My41MDYgNTFDMjY0LjcxNyA1MSAyNjUuODEzIDUxLjQ4MzcgMjY2LjYwNiA1Mi4yNjU4TDI2Ny4wNTIgNTIuNzk4NyAyNjcuNTM5IDUzLjYyODMgMjkwLjE4NSA5Mi4xODMxIDI5MC41NDUgOTIuNzk1IDI5MC42NTYgOTIuOTk2QzI5MC44NzcgOTMuNTEzIDI5MSA5NC4wODE1IDI5MSA5NC42NzgyIDI5MSA5Ny4wNjUxIDI4OS4wMzggOTkgMjg2LjYxNyA5OUwyNDAuMzgzIDk5QzIzNy45NjMgOTkgMjM2IDk3LjA2NTEgMjM2IDk0LjY3ODIgMjM2IDk0LjM3OTkgMjM2LjAzMSA5NC4wODg2IDIzNi4wODkgOTMuODA3MkwyMzYuMzM4IDkzLjAxNjIgMjM2Ljg1OCA5Mi4xMzE0IDI1OS40NzMgNTMuNjI5NCAyNTkuOTYxIDUyLjc5ODUgMjYwLjQwNyA1Mi4yNjU4QzI2MS4yIDUxLjQ4MzcgMjYyLjI5NiA1MSAyNjMuNTA2IDUxWk0yNjMuNTg2IDY2LjAxODNDMjYwLjczNyA2Ni4wMTgzIDI1OS4zMTMgNjcuMTI0NSAyNTkuMzEzIDY5LjMzNyAyNTkuMzEzIDY5LjYxMDIgMjU5LjMzMiA2OS44NjA4IDI1OS4zNzEgNzAuMDg4N0wyNjEuNzk1IDg0LjAxNjEgMjY1LjM4IDg0LjAxNjEgMjY3LjgyMSA2OS43NDc1QzI2Ny44NiA2OS43MzA5IDI2Ny44NzkgNjkuNTg3NyAyNjcuODc5IDY5LjMxNzkgMjY3Ljg3OSA2Ny4xMTgyIDI2Ni40NDggNjYuMDE4MyAyNjMuNTg2IDY2LjAxODNaTTI2My41NzYgODYuMDU0N0MyNjEuMDQ5IDg2LjA1NDcgMjU5Ljc4NiA4Ny4zMDA1IDI1OS43ODYgODkuNzkyMSAyNTkuNzg2IDkyLjI4MzcgMjYxLjA0OSA5My41Mjk1IDI2My41NzYgOTMuNTI5NSAyNjYuMTE2IDkzLjUyOTUgMjY3LjM4NyA5Mi4yODM3IDI2Ny4zODcgODkuNzkyMSAyNjcuMzg3IDg3LjMwMDUgMjY2LjExNiA4Ni4wNTQ3IDI2My41NzYgODYuMDU0N1oiIGZpbGw9IiNGRkU1MDAiIGZpbGwtcnVsZT0iZXZlbm9kZCIvPjwvZz48L3N2Zz4=) no-repeat 1rem/1.8rem, #b32121;
-    padding: 1rem 1rem 1rem 3.7rem;
-    color: white;
-}
-
-    .blazor-error-boundary::after {
-        content: "An error has occurred."
-    }
-
-.loading-progress {
-    position: relative;
-    display: block;
-    width: 8rem;
-    height: 8rem;
-    margin: 20vh auto 1rem auto;
-}
-
-    .loading-progress circle {
-        fill: none;
-        stroke: #e0e0e0;
-        stroke-width: 0.6rem;
-        transform-origin: 50% 50%;
-        transform: rotate(-90deg);
-    }
-
-        .loading-progress circle:last-child {
-            stroke: #1b6ec2;
-            stroke-dasharray: calc(3.141 * var(--blazor-load-percentage, 0%) * 0.8), 500%;
-            transition: stroke-dasharray 0.05s ease-in-out;
-        }
-
-.loading-progress-text {
-    position: absolute;
-    text-align: center;
-    font-weight: bold;
-    inset: calc(20vh + 3.25rem) 0 auto 0.2rem;
-}
-
-    .loading-progress-text:after {
-        content: var(--blazor-load-percentage-text, "Loading");
-    }
-
-
-.loading-screen {
+/* ─────────────────────────────────────────────────────────────────────────── */
+/* Demo Container                                                               */
+/* ─────────────────────────────────────────────────────────────────────────── */
+.demo-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 24px;
+    min-height: 100vh;
     display: flex;
     flex-direction: column;
+    gap: 24px;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────── */
+/* Header                                                                       */
+/* ─────────────────────────────────────────────────────────────────────────── */
+.demo-header {
+    background: var(--bg-card);
+    border-radius: 20px;
+    padding: 24px 32px;
+    border: 1px solid var(--border-color);
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
     align-items: center;
-    justify-content: center;
-    height: 100vh;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.logo-section {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.logo-icon {
+    font-size: 48px;
+    filter: drop-shadow(0 0 20px rgba(99, 102, 241, 0.5));
+}
+
+.logo-text h1 {
+    margin: 0;
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--text-primary);
+}
+
+.logo-text h1 .highlight {
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.logo-text .tagline {
+    margin: 4px 0 0;
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+/* Navigation Links */
+.header-nav {
+    display: flex;
+    gap: 12px;
+}
+
+.nav-link {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    border-radius: 12px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    border: 1px solid transparent;
+}
+
+.nav-link .nav-icon {
+    font-size: 16px;
+}
+
+.docs-link {
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    color: white;
+    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+}
+
+.docs-link:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(99, 102, 241, 0.5);
+}
+
+.github-link {
+    background: var(--bg-card-hover);
+    color: var(--text-primary);
+    border-color: var(--border-color);
+}
+
+.github-link:hover {
+    background: #2d2d4a;
+    border-color: var(--primary);
+}
+
+.nuget-link {
+    background: var(--bg-card-hover);
+    color: var(--text-primary);
+    border-color: var(--border-color);
+}
+
+.nuget-link:hover {
+    background: #2d2d4a;
+    border-color: var(--secondary);
+}
+
+/* Badges */
+.badges {
+    display: flex;
+    gap: 8px;
+    margin-top: 16px;
+    flex-wrap: wrap;
+}
+
+.badges img {
+    height: 22px;
+    border-radius: 4px;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────── */
+/* Main Demo Area                                                               */
+/* ─────────────────────────────────────────────────────────────────────────── */
+.demo-main {
+    flex: 1;
+}
+
+.viewer-wrapper {
+    background: var(--bg-card);
+    border-radius: 20px;
+    padding: 4px;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-glow);
+    min-height: 500px;
+    overflow: hidden;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────── */
+/* Templates Section                                                            */
+/* ─────────────────────────────────────────────────────────────────────────── */
+.templates-section {
+    background: var(--bg-card);
+    border-radius: 20px;
+    padding: 24px;
+    border: 1px solid var(--border-color);
+}
+
+.section-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 0 20px;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.section-icon {
+    font-size: 22px;
+}
+
+.template-buttons {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.template-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 20px;
+    border: 2px solid var(--border-color);
+    border-radius: 12px;
+    background: var(--bg-card-hover);
+    color: var(--text-primary);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.template-btn:hover {
+    border-color: var(--primary);
+    background: rgba(99, 102, 241, 0.1);
+}
+
+.template-btn.active {
+    border-color: var(--primary);
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(168, 85, 247, 0.2));
+    box-shadow: 0 0 20px rgba(99, 102, 241, 0.3);
+}
+
+.btn-icon {
+    font-size: 18px;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────── */
+/* Features Section                                                             */
+/* ─────────────────────────────────────────────────────────────────────────── */
+.features-section {
+    background: var(--bg-card);
+    border-radius: 20px;
+    padding: 24px;
+    border: 1px solid var(--border-color);
+}
+
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+}
+
+.feature-card {
+    background: var(--bg-card-hover);
+    border-radius: 16px;
+    padding: 20px;
+    text-align: center;
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+}
+
+.feature-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--primary);
+    box-shadow: 0 8px 25px rgba(99, 102, 241, 0.2);
+}
+
+.feature-icon {
+    font-size: 32px;
+    display: block;
+    margin-bottom: 12px;
+}
+
+.feature-card h4 {
+    margin: 0 0 6px;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.feature-card p {
+    margin: 0;
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────── */
+/* Footer                                                                       */
+/* ─────────────────────────────────────────────────────────────────────────── */
+.demo-footer {
+    text-align: center;
+    padding: 24px;
+    color: var(--text-secondary);
+}
+
+.demo-footer p {
+    margin: 4px 0;
+    font-size: 14px;
+}
+
+.demo-footer a {
+    color: var(--primary);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.demo-footer a:hover {
+    text-decoration: underline;
+}
+
+.demo-footer .version {
+    font-size: 12px;
+    opacity: 0.7;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────── */
+/* Responsive Design                                                            */
+/* ─────────────────────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+    .demo-container {
+        padding: 16px;
+    }
+
+    .demo-header {
+        padding: 20px;
+    }
+
+    .header-content {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .header-nav {
+        flex-wrap: wrap;
+        width: 100%;
+    }
+
+    .nav-link {
+        flex: 1;
+        justify-content: center;
+        min-width: 100px;
+    }
+
+    .logo-text h1 {
+        font-size: 22px;
+    }
+
+    .logo-icon {
+        font-size: 36px;
+    }
+
+    .template-buttons {
+        justify-content: center;
+    }
+
+    .template-btn {
+        flex: 1;
+        min-width: 120px;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .nav-link span:not(.nav-icon) {
+        display: none;
+    }
+
+    .nav-link {
+        padding: 12px;
+    }
+
+    .badges {
+        justify-content: center;
+    }
+
+    .template-btn .btn-text {
+        display: none;
+    }
+
+    .template-btn {
+        min-width: auto;
+        flex: none;
+    }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────── */
+/* Animations                                                                   */
+/* ─────────────────────────────────────────────────────────────────────────── */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.demo-header {
+    animation: fadeInUp 0.5s ease-out;
+}
+
+.demo-main {
+    animation: fadeInUp 0.5s ease-out 0.1s both;
+}
+
+.templates-section {
+    animation: fadeInUp 0.5s ease-out 0.2s both;
+}
+
+.features-section {
+    animation: fadeInUp 0.5s ease-out 0.3s both;
+}
+
+.demo-footer {
+    animation: fadeInUp 0.5s ease-out 0.4s both;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────── */
+/* Blazor Loading                                                               */
+/* ─────────────────────────────────────────────────────────────────────────── */
+#blazor-error-ui {
+    background: #ef4444;
+    color: white;
+    padding: 16px;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    display: none;
+}
+
+#blazor-error-ui .dismiss {
+    cursor: pointer;
+    position: absolute;
+    right: 16px;
+    top: 16px;
 }

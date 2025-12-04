@@ -5,6 +5,7 @@ on:
     branches: [ main ]
     paths:
       - 'src/**'
+      - 'docs-site/**'
       - '.github/workflows/deploy-pages.yml'
   workflow_dispatch:
 
@@ -20,28 +21,46 @@ concurrency:
 env:
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
   DOTNET_NOLOGO: true
+  NODE_VERSION: '20'
 
 jobs:
   build:
-    name: 🏗️ Build Blazor WASM
+    name: 🏗️ Build Demo & Docs
     runs-on: ubuntu-latest
 
     steps:
+    # ═══════════════════════════════════════════════════════════════════════
+    # 📥 Checkout
+    # ═══════════════════════════════════════════════════════════════════════
     - name: 📥 Checkout
       uses: actions/checkout@v4
 
+    # ═══════════════════════════════════════════════════════════════════════
+    # 🔧 Setup .NET
+    # ═══════════════════════════════════════════════════════════════════════
     - name: ⚙️ Setup .NET
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 8.0.x
 
-    - name: 📦 Restore dependencies
+    # ═══════════════════════════════════════════════════════════════════════
+    # 🟢 Setup Node.js (for VitePress)
+    # ═══════════════════════════════════════════════════════════════════════
+    - name: 🟢 Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+
+    # ═══════════════════════════════════════════════════════════════════════
+    # 🏗️ Build Blazor Demo
+    # ═══════════════════════════════════════════════════════════════════════
+    - name: 📦 Restore .NET dependencies
       run: dotnet restore JsonViewer.Blazor.sln
 
-    - name: 🏗️ Build
+    - name: 🏗️ Build Blazor Solution
       run: dotnet build JsonViewer.Blazor.sln --configuration Release --no-restore
 
-    - name: 📦 Publish Blazor WASM
+    - name: 📦 Publish Blazor Demo
       run: |
         dotnet publish src/Blazor.Demo/Blazor.Demo.csproj \
           -c Release \
@@ -52,8 +71,32 @@ jobs:
       run: |
         sed -i 's|<base href="/" />|<base href="/Blazor/" />|g' release/wwwroot/index.html
         echo "✅ Base href updated to /Blazor/"
-        grep "<base" release/wwwroot/index.html
 
+    # ═══════════════════════════════════════════════════════════════════════
+    # 📚 Build VitePress Documentation
+    # ═══════════════════════════════════════════════════════════════════════
+    - name: 📦 Install VitePress dependencies
+      working-directory: docs-site
+      run: npm ci || npm install
+
+    - name: 📋 Copy logo to docs public folder
+      run: |
+        mkdir -p docs-site/public
+        cp Documents/assets/logo.png docs-site/public/logo.png || echo "Logo not found, skipping"
+
+    - name: 🏗️ Build VitePress
+      working-directory: docs-site
+      run: npm run docs:build
+
+    - name: 📁 Copy docs to release folder
+      run: |
+        mkdir -p release/wwwroot/docs
+        cp -r docs-site/.vitepress/dist/* release/wwwroot/docs/
+        echo "✅ Documentation copied to /docs/"
+
+    # ═══════════════════════════════════════════════════════════════════════
+    # 📝 Final Setup
+    # ═══════════════════════════════════════════════════════════════════════
     - name: 📝 Add .nojekyll file
       run: touch release/wwwroot/.nojekyll
 
@@ -64,7 +107,13 @@ jobs:
       run: |
         echo "📂 Contents of release/wwwroot:"
         ls -la release/wwwroot/
+        echo ""
+        echo "📂 Contents of release/wwwroot/docs:"
+        ls -la release/wwwroot/docs/ || echo "No docs folder"
 
+    # ═══════════════════════════════════════════════════════════════════════
+    # 📤 Upload & Deploy
+    # ═══════════════════════════════════════════════════════════════════════
     - name: ⚙️ Setup Pages
       uses: actions/configure-pages@v5
 
@@ -86,3 +135,13 @@ jobs:
     - name: 🌐 Deploy to GitHub Pages
       id: deployment
       uses: actions/deploy-pages@v4
+
+    - name: 📝 Create Summary
+      run: |
+        echo "## 🚀 Deployment Complete!" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### 🔗 Links" >> $GITHUB_STEP_SUMMARY
+        echo "| Site | URL |" >> $GITHUB_STEP_SUMMARY
+        echo "|------|-----|" >> $GITHUB_STEP_SUMMARY
+        echo "| **Live Demo** | https://jsonviewer-component.github.io/Blazor/ |" >> $GITHUB_STEP_SUMMARY
+        echo "| **Documentation** | https://jsonviewer-component.github.io/Blazor/docs/ |" >> $GITHUB_STEP_SUMMARY
