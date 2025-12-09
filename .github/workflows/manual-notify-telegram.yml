@@ -26,17 +26,11 @@ jobs:
       contents: read
 
     steps:
-      # ========================================
-      # 1️⃣ Checkout Repository
-      # ========================================
       - name: 📥 Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      # ========================================
-      # 2️⃣ Get Latest Release Info
-      # ========================================
       - name: 🔍 Fetch Latest Release
         id: latest_release
         env:
@@ -57,7 +51,6 @@ jobs:
             exit 1
           fi
 
-          # Extract info using jq
           TAG_NAME=$(echo "$RELEASE_DATA" | jq -r '.tag_name // empty')
           NAME=$(echo "$RELEASE_DATA" | jq -r '.name // empty')
           BODY=$(echo "$RELEASE_DATA" | jq -r '.body // empty')
@@ -65,29 +58,20 @@ jobs:
           IS_PRERELEASE=$(echo "$RELEASE_DATA" | jq -r '.prerelease // false')
           PUBLISHED_AT=$(echo "$RELEASE_DATA" | jq -r '.published_at // empty')
 
-          # Extract version without 'v' prefix for NuGet
           VERSION="${TAG_NAME#v}"
 
           echo "✅ Found release: $TAG_NAME (version: $VERSION)"
 
-          # Save to outputs
-          {
-            echo "tag_name=$TAG_NAME"
-            echo "version=$VERSION"
-            echo "name=$NAME"
-            echo "url=$URL"
-            echo "is_prerelease=$IS_PRERELEASE"
-            echo "published_at=$PUBLISHED_AT"
-          } >> "$GITHUB_OUTPUT"
+          echo "tag_name=$TAG_NAME" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "name=$NAME" >> "$GITHUB_OUTPUT"
+          echo "url=$URL" >> "$GITHUB_OUTPUT"
+          echo "is_prerelease=$IS_PRERELEASE" >> "$GITHUB_OUTPUT"
+          echo "published_at=$PUBLISHED_AT" >> "$GITHUB_OUTPUT"
 
-          # Save body to file (may be large)
           printf '%s' "$BODY" > release_body.txt
-
           echo "📝 Release body saved to file"
 
-      # ========================================
-      # 3️⃣ Prepare Message for Telegram
-      # ========================================
       - name: 📝 Prepare Telegram Message
         id: prepare_message
         run: |
@@ -99,14 +83,10 @@ jobs:
           PUBLISHED_AT="${{ steps.latest_release.outputs.published_at }}"
           CUSTOM_MSG="${{ inputs.custom_message }}"
 
-          # Read body from file
           BODY=$(cat release_body.txt 2>/dev/null || echo "")
 
-          # Convert Markdown to HTML (basic conversion)
-          # Escape HTML special chars first
           BODY_HTML=$(echo "$BODY" | sed 's/&/\&amp;/g; s/</\&lt;/g; s/>/\&gt;/g')
 
-          # Then convert markdown
           BODY_HTML=$(echo "$BODY_HTML" | \
             sed 's/^### \(.*\)$/<b>\1<\/b>/g' | \
             sed 's/^## \(.*\)$/<b>\1<\/b>/g' | \
@@ -114,74 +94,47 @@ jobs:
             sed 's/\*\*\([^*]*\)\*\*/<b>\1<\/b>/g' | \
             sed 's/`\([^`]*\)`/<code>\1<\/code>/g')
 
-          # Truncate if too long (Telegram limit: 4096 chars)
           if [ ${#BODY_HTML} -gt 1800 ]; then
-            BODY_HTML="${BODY_HTML:0:1800}...
-
-<i>(truncated - see full notes on GitHub)</i>"
+            BODY_HTML="${BODY_HTML:0:1800}... (truncated)"
           fi
 
-          # Determine release type
           if [ "$IS_PRERELEASE" == "true" ]; then
-            RELEASE_TYPE="⚠️ <b>Pre-release</b>"
+            RELEASE_TYPE="⚠️ Pre-release"
           else
-            RELEASE_TYPE="✅ <b>Stable Release</b>"
+            RELEASE_TYPE="✅ Stable Release"
           fi
 
-          # Format published date
           if [ -n "$PUBLISHED_AT" ]; then
             FORMATTED_DATE=$(date -d "$PUBLISHED_AT" "+%Y-%m-%d %H:%M UTC" 2>/dev/null || echo "$PUBLISHED_AT")
           else
             FORMATTED_DATE="N/A"
           fi
 
-          # Build final message
-          cat > telegram_message.txt << 'MSGEOF'
-📢 <b>JsonViewer.Blazor - Manual Notification</b>
-
-MSGEOF
-
-          cat >> telegram_message.txt << EOF
-$RELEASE_TYPE
-
-📦 <b>Version:</b> <code>${TAG_NAME}</code>
-📝 <b>Name:</b> ${NAME}
-📅 <b>Published:</b> ${FORMATTED_DATE}
-
-━━━━━━━━━━━━━━━━━━━━
-
-<b>📋 Release Notes:</b>
-${BODY_HTML}
-
-━━━━━━━━━━━━━━━━━━━━
-
-🔗 <b>Links:</b>
-• <a href="${URL}">View on GitHub</a>
-• <a href="https://www.nuget.org/packages/JsonViewer.Blazor/${VERSION}">View on NuGet</a>
-
-⚡ <b>Install via:</b>
-<code>dotnet add package JsonViewer.Blazor --version ${VERSION}</code>
-EOF
-
-          # Add custom message if provided
-          if [ -n "$CUSTOM_MSG" ]; then
-            cat >> telegram_message.txt << EOF
-
-━━━━━━━━━━━━━━━━━━━━
-💬 <i>${CUSTOM_MSG}</i>
-EOF
-          fi
-
-          # Add hashtags
-          echo "" >> telegram_message.txt
-          echo "#JsonViewer #Blazor #DotNet #OpenSource" >> telegram_message.txt
+          # Build message using printf
+          {
+            printf '📢 <b>JsonViewer.Blazor - Manual Notification</b>\n\n'
+            printf '<b>%s</b>\n\n' "$RELEASE_TYPE"
+            printf '📦 <b>Version:</b> <code>%s</code>\n' "$TAG_NAME"
+            printf '📝 <b>Name:</b> %s\n' "$NAME"
+            printf '📅 <b>Published:</b> %s\n\n' "$FORMATTED_DATE"
+            printf '━━━━━━━━━━━━━━━━━━━━\n\n'
+            printf '<b>📋 Release Notes:</b>\n%s\n\n' "$BODY_HTML"
+            printf '━━━━━━━━━━━━━━━━━━━━\n\n'
+            printf '🔗 <b>Links:</b>\n'
+            printf '• <a href="%s">View on GitHub</a>\n' "$URL"
+            printf '• <a href="https://www.nuget.org/packages/JsonViewer.Blazor/%s">View on NuGet</a>\n\n' "$VERSION"
+            printf '⚡ <b>Install via:</b>\n'
+            printf '<code>dotnet add package JsonViewer.Blazor --version %s</code>\n' "$VERSION"
+            if [ -n "$CUSTOM_MSG" ]; then
+              printf '\n━━━━━━━━━━━━━━━━━━━━\n'
+              printf '💬 <i>%s</i>\n' "$CUSTOM_MSG"
+            fi
+            printf '\n#JsonViewer #Blazor #DotNet #OpenSource'
+          } > telegram_message.txt
 
           echo "✅ Message prepared successfully!"
           echo "📏 Message length: $(wc -c < telegram_message.txt) bytes"
 
-      # ========================================
-      # 4️⃣ Send to Telegram
-      # ========================================
       - name: 📤 Send to Telegram Channel
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
@@ -197,52 +150,45 @@ EOF
 
           echo "📤 Sending message to Telegram..."
 
-          # Send using curl with proper encoding
           RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
             "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
             -H "Content-Type: application/json" \
             -d "$(jq -n \
               --arg chat_id "$TELEGRAM_CHAT_ID" \
               --arg text "$MESSAGE" \
-              '{
-                chat_id: $chat_id,
-                text: $text,
-                parse_mode: "HTML",
-                disable_web_page_preview: false
-              }')")
+              '{chat_id: $chat_id, text: $text, parse_mode: "HTML", disable_web_page_preview: false}')")
 
           HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
-          BODY=$(echo "$RESPONSE" | sed '$d')
+          RESP_BODY=$(echo "$RESPONSE" | sed '$d')
 
-          if [ "$HTTP_CODE" -eq 200 ] && echo "$BODY" | jq -e '.ok == true' > /dev/null 2>&1; then
+          if [ "$HTTP_CODE" -eq 200 ] && echo "$RESP_BODY" | jq -e '.ok == true' > /dev/null 2>&1; then
             echo "✅ Message sent successfully!"
-            MESSAGE_ID=$(echo "$BODY" | jq -r '.result.message_id')
+            MESSAGE_ID=$(echo "$RESP_BODY" | jq -r '.result.message_id')
             echo "📨 Message ID: $MESSAGE_ID"
           else
             echo "❌ Failed to send message!"
             echo "HTTP Code: $HTTP_CODE"
-            echo "Response: $BODY"
+            echo "Response: $RESP_BODY"
             exit 1
           fi
 
-      # ========================================
-      # 5️⃣ Summary
-      # ========================================
       - name: 📊 Summary
         if: always()
         run: |
-          {
-            echo "## 📢 Telegram Notification Summary"
-            echo ""
-            echo "### 📦 Release Info"
-            echo "| Property | Value |"
-            echo "|----------|-------|"
-            echo "| **Tag** | \`${{ steps.latest_release.outputs.tag_name }}\` |"
-            echo "| **Version** | \`${{ steps.latest_release.outputs.version }}\` |"
-            echo "| **Name** | ${{ steps.latest_release.outputs.name }} |"
-            echo "| **Type** | ${{ steps.latest_release.outputs.is_prerelease == 'true' && '⚠️ Pre-release' || '✅ Stable' }} |"
-            echo ""
-            echo "### 🔗 Links"
-            echo "- [GitHub Release](${{ steps.latest_release.outputs.url }})"
-            echo "- [NuGet Package](https://www.nuget.org/packages/JsonViewer.Blazor/${{ steps.latest_release.outputs.version }})"
-          } >> "$GITHUB_STEP_SUMMARY"
+          echo "## 📢 Telegram Notification Summary" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "### 📦 Release Info" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Property | Value |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|----------|-------|" >> "$GITHUB_STEP_SUMMARY"
+          echo "| **Tag** | \`${{ steps.latest_release.outputs.tag_name }}\` |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| **Version** | \`${{ steps.latest_release.outputs.version }}\` |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| **Name** | ${{ steps.latest_release.outputs.name }} |" >> "$GITHUB_STEP_SUMMARY"
+          if [ "${{ steps.latest_release.outputs.is_prerelease }}" == "true" ]; then
+            echo "| **Type** | ⚠️ Pre-release |" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "| **Type** | ✅ Stable |" >> "$GITHUB_STEP_SUMMARY"
+          fi
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "### 🔗 Links" >> "$GITHUB_STEP_SUMMARY"
+          echo "- [GitHub Release](${{ steps.latest_release.outputs.url }})" >> "$GITHUB_STEP_SUMMARY"
+          echo "- [NuGet Package](https://www.nuget.org/packages/JsonViewer.Blazor/${{ steps.latest_release.outputs.version }})" >> "$GITHUB_STEP_SUMMARY"
