@@ -2,7 +2,7 @@
 
 ## Summary
 
-There are currently 5 pull requests from Dependabot in your repository. Dependabot is an automated GitHub bot that manages security updates and dependency upgrades for your projects.
+There are currently 7 pull requests from Dependabot in your repository. Dependabot is an automated GitHub bot that manages security updates and dependency upgrades for your projects.
 
 ## Pull Requests List
 
