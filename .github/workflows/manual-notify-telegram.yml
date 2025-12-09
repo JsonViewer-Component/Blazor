@@ -1,4 +1,4 @@
-name: 📢 Manual Telegram Notification
+name: Manual Telegram Notification
 
 on:
   workflow_dispatch:
@@ -19,35 +19,35 @@ env:
 
 jobs:
   send-notification:
-    name: 📱 Send Manual Notification
+    name: Send Manual Notification
     runs-on: ubuntu-latest
 
     permissions:
       contents: read
 
     steps:
-      - name: 📥 Checkout
+      - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: 🔍 Fetch Latest Release
+      - name: Fetch Latest Release
         id: latest_release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo "🔍 Fetching latest release..."
+          echo "Fetching latest release..."
 
           if [ "${{ inputs.include_prerelease }}" == "true" ]; then
-            echo "📦 Including pre-release versions..."
+            echo "Including pre-release versions..."
             RELEASE_DATA=$(gh api repos/${{ github.repository }}/releases --jq '.[0]')
           else
-            echo "📦 Stable releases only..."
+            echo "Stable releases only..."
             RELEASE_DATA=$(gh api repos/${{ github.repository }}/releases --jq '[.[] | select(.prerelease == false)][0]')
           fi
 
           if [ -z "$RELEASE_DATA" ] || [ "$RELEASE_DATA" == "null" ]; then
-            echo "❌ No release found!"
+            echo "No release found!"
             exit 1
           fi
 
@@ -60,7 +60,7 @@ jobs:
 
           VERSION="${TAG_NAME#v}"
 
-          echo "✅ Found release: $TAG_NAME (version: $VERSION)"
+          echo "Found release: $TAG_NAME (version: $VERSION)"
 
           echo "tag_name=$TAG_NAME" >> "$GITHUB_OUTPUT"
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
@@ -70,9 +70,9 @@ jobs:
           echo "published_at=$PUBLISHED_AT" >> "$GITHUB_OUTPUT"
 
           printf '%s' "$BODY" > release_body.txt
-          echo "📝 Release body saved to file"
+          echo "Release body saved to file"
 
-      - name: 📝 Prepare Telegram Message
+      - name: Prepare Telegram Message
         id: prepare_message
         run: |
           TAG_NAME="${{ steps.latest_release.outputs.tag_name }}"
@@ -85,8 +85,10 @@ jobs:
 
           BODY=$(cat release_body.txt 2>/dev/null || echo "")
 
+          # Escape HTML special chars
           BODY_HTML=$(echo "$BODY" | sed 's/&/\&amp;/g; s/</\&lt;/g; s/>/\&gt;/g')
 
+          # Convert markdown to HTML
           BODY_HTML=$(echo "$BODY_HTML" | \
             sed 's/^### \(.*\)$/<b>\1<\/b>/g' | \
             sed 's/^## \(.*\)$/<b>\1<\/b>/g' | \
@@ -94,14 +96,15 @@ jobs:
             sed 's/\*\*\([^*]*\)\*\*/<b>\1<\/b>/g' | \
             sed 's/`\([^`]*\)`/<code>\1<\/code>/g')
 
+          # Truncate if too long
           if [ ${#BODY_HTML} -gt 1800 ]; then
             BODY_HTML="${BODY_HTML:0:1800}... (truncated)"
           fi
 
           if [ "$IS_PRERELEASE" == "true" ]; then
-            RELEASE_TYPE="⚠️ Pre-release"
+            RELEASE_TYPE="Pre-release"
           else
-            RELEASE_TYPE="✅ Stable Release"
+            RELEASE_TYPE="Stable Release"
           fi
 
           if [ -n "$PUBLISHED_AT" ]; then
@@ -110,45 +113,51 @@ jobs:
             FORMATTED_DATE="N/A"
           fi
 
-          # Build message using printf
-          {
-            printf '📢 <b>JsonViewer.Blazor - Manual Notification</b>\n\n'
-            printf '<b>%s</b>\n\n' "$RELEASE_TYPE"
-            printf '📦 <b>Version:</b> <code>%s</code>\n' "$TAG_NAME"
-            printf '📝 <b>Name:</b> %s\n' "$NAME"
-            printf '📅 <b>Published:</b> %s\n\n' "$FORMATTED_DATE"
-            printf '━━━━━━━━━━━━━━━━━━━━\n\n'
-            printf '<b>📋 Release Notes:</b>\n%s\n\n' "$BODY_HTML"
-            printf '━━━━━━━━━━━━━━━━━━━━\n\n'
-            printf '🔗 <b>Links:</b>\n'
-            printf '• <a href="%s">View on GitHub</a>\n' "$URL"
-            printf '• <a href="https://www.nuget.org/packages/JsonViewer.Blazor/%s">View on NuGet</a>\n\n' "$VERSION"
-            printf '⚡ <b>Install via:</b>\n'
-            printf '<code>dotnet add package JsonViewer.Blazor --version %s</code>\n' "$VERSION"
-            if [ -n "$CUSTOM_MSG" ]; then
-              printf '\n━━━━━━━━━━━━━━━━━━━━\n'
-              printf '💬 <i>%s</i>\n' "$CUSTOM_MSG"
-            fi
-            printf '\n#JsonViewer #Blazor #DotNet #OpenSource'
-          } > telegram_message.txt
+          # Build message
+          cat > telegram_message.txt << MSGEOF
+          JsonViewer.Blazor - Manual Notification
 
-          echo "✅ Message prepared successfully!"
-          echo "📏 Message length: $(wc -c < telegram_message.txt) bytes"
+          ${RELEASE_TYPE}
 
-      - name: 📤 Send to Telegram Channel
+          Version: ${TAG_NAME}
+          Name: ${NAME}
+          Published: ${FORMATTED_DATE}
+
+          Release Notes:
+          ${BODY_HTML}
+
+          Links:
+          - GitHub: ${URL}
+          - NuGet: https://www.nuget.org/packages/JsonViewer.Blazor/${VERSION}
+
+          Install:
+          dotnet add package JsonViewer.Blazor --version ${VERSION}
+          MSGEOF
+
+          if [ -n "$CUSTOM_MSG" ]; then
+            echo "" >> telegram_message.txt
+            echo "Note: ${CUSTOM_MSG}" >> telegram_message.txt
+          fi
+
+          echo "#JsonViewer #Blazor #DotNet #OpenSource" >> telegram_message.txt
+
+          echo "Message prepared successfully!"
+          echo "Message length: $(wc -c < telegram_message.txt) bytes"
+
+      - name: Send to Telegram Channel
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
           if [ -z "$TELEGRAM_BOT_TOKEN" ] || [ -z "$TELEGRAM_CHAT_ID" ]; then
-            echo "❌ Telegram credentials not configured!"
+            echo "Telegram credentials not configured!"
             echo "Please set TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID secrets."
             exit 1
           fi
 
           MESSAGE=$(cat telegram_message.txt)
 
-          echo "📤 Sending message to Telegram..."
+          echo "Sending message to Telegram..."
 
           RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
             "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
@@ -162,33 +171,33 @@ jobs:
           RESP_BODY=$(echo "$RESPONSE" | sed '$d')
 
           if [ "$HTTP_CODE" -eq 200 ] && echo "$RESP_BODY" | jq -e '.ok == true' > /dev/null 2>&1; then
-            echo "✅ Message sent successfully!"
+            echo "Message sent successfully!"
             MESSAGE_ID=$(echo "$RESP_BODY" | jq -r '.result.message_id')
-            echo "📨 Message ID: $MESSAGE_ID"
+            echo "Message ID: $MESSAGE_ID"
           else
-            echo "❌ Failed to send message!"
+            echo "Failed to send message!"
             echo "HTTP Code: $HTTP_CODE"
             echo "Response: $RESP_BODY"
             exit 1
           fi
 
-      - name: 📊 Summary
+      - name: Summary
         if: always()
         run: |
-          echo "## 📢 Telegram Notification Summary" >> "$GITHUB_STEP_SUMMARY"
+          echo "## Telegram Notification Summary" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "### 📦 Release Info" >> "$GITHUB_STEP_SUMMARY"
+          echo "### Release Info" >> "$GITHUB_STEP_SUMMARY"
           echo "| Property | Value |" >> "$GITHUB_STEP_SUMMARY"
           echo "|----------|-------|" >> "$GITHUB_STEP_SUMMARY"
-          echo "| **Tag** | \`${{ steps.latest_release.outputs.tag_name }}\` |" >> "$GITHUB_STEP_SUMMARY"
-          echo "| **Version** | \`${{ steps.latest_release.outputs.version }}\` |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| **Tag** | ${{ steps.latest_release.outputs.tag_name }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| **Version** | ${{ steps.latest_release.outputs.version }} |" >> "$GITHUB_STEP_SUMMARY"
           echo "| **Name** | ${{ steps.latest_release.outputs.name }} |" >> "$GITHUB_STEP_SUMMARY"
           if [ "${{ steps.latest_release.outputs.is_prerelease }}" == "true" ]; then
-            echo "| **Type** | ⚠️ Pre-release |" >> "$GITHUB_STEP_SUMMARY"
+            echo "| **Type** | Pre-release |" >> "$GITHUB_STEP_SUMMARY"
           else
-            echo "| **Type** | ✅ Stable |" >> "$GITHUB_STEP_SUMMARY"
+            echo "| **Type** | Stable |" >> "$GITHUB_STEP_SUMMARY"
           fi
           echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "### 🔗 Links" >> "$GITHUB_STEP_SUMMARY"
+          echo "### Links" >> "$GITHUB_STEP_SUMMARY"
           echo "- [GitHub Release](${{ steps.latest_release.outputs.url }})" >> "$GITHUB_STEP_SUMMARY"
           echo "- [NuGet Package](https://www.nuget.org/packages/JsonViewer.Blazor/${{ steps.latest_release.outputs.version }})" >> "$GITHUB_STEP_SUMMARY"
