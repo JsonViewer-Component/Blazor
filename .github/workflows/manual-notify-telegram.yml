@@ -115,7 +115,7 @@ jobs:
 
           # Build message
           cat > telegram_message.txt << MSGEOF
-          JsonViewer.Blazor - Manual Notification
+          JsonViewer.Blazor - Notification
 
           ${RELEASE_TYPE}
 
