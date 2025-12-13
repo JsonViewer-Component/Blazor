@@ -1,4 +1,5 @@
-﻿@page "/"
+@page "/"
+@inject IJSRuntime JSRuntime
 
 <PageTitle>JSON Viewer Component - Live Demo</PageTitle>
 
@@ -9,70 +10,105 @@
     <header class="demo-header">
         <div class="header-content">
             <div class="logo-section">
-                <span class="logo-icon">🔍</span>
+                <div class="logo-icon-container">
+                    <span class="logo-icon">🔍</span>
+                </div>
                 <div class="logo-text">
                     <h1>JsonViewer<span class="highlight">.Blazor</span></h1>
-                    <p class="tagline">A powerful JSON viewer component for Blazor applications</p>
+                    <div class="badges-inline">
+                        <img src="https://img.shields.io/nuget/dt/JsonViewer.Blazor?style=flat-square&logo=nuget&color=a855f7" alt="NuGet Downloads" />
+                        <img src="https://img.shields.io/github/stars/JsonViewer-Component/Blazor?style=flat-square&logo=github&color=ec4899" alt="GitHub Stars" />
+                    </div>
                 </div>
             </div>
 
             <nav class="header-nav">
-                <a href="https://github.com/JsonViewer-Component/Blazor#readme" target="_blank" class="nav-link docs-link">
+                <button class="theme-toggle-btn" @onclick="ToggleTheme" title="Toggle Theme">
+                    <span class="theme-toggle-icon">@(isDarkTheme ? "🌙" : "☀️")</span>
+                </button>
+                <a href="https://github.com/JsonViewer-Component/Blazor#readme" target="_blank" class="nav-link docs-link" title="View Documentation">
                     <span class="nav-icon">📚</span>
-                    <span>Documentation</span>
+                    <span class="nav-text">Documentation</span>
                 </a>
-                <a href="https://github.com/JsonViewer-Component/Blazor" target="_blank" class="nav-link github-link">
+                <a href="https://github.com/JsonViewer-Component/Blazor" target="_blank" class="nav-link github-link" title="View on GitHub">
                     <span class="nav-icon">⭐</span>
-                    <span>GitHub</span>
+                    <span class="nav-text">GitHub</span>
                 </a>
-                <a href="https://www.nuget.org/packages/JsonViewer.Blazor" target="_blank" class="nav-link nuget-link">
+                <a href="https://www.nuget.org/packages/JsonViewer.Blazor" target="_blank" class="nav-link nuget-link" title="View on NuGet">
                     <span class="nav-icon">📦</span>
-                    <span>NuGet</span>
+                    <span class="nav-text">NuGet</span>
                 </a>
             </nav>
-        </div>
-
-        <div class="badges">
-            <img src="https://img.shields.io/nuget/v/JsonViewer.Blazor?style=flat-square&logo=nuget&color=6366f1" alt="NuGet Version" />
-            <img src="https://img.shields.io/nuget/dt/JsonViewer.Blazor?style=flat-square&logo=nuget&color=a855f7" alt="NuGet Downloads" />
-            <img src="https://img.shields.io/github/stars/JsonViewer-Component/Blazor?style=flat-square&logo=github&color=ec4899" alt="GitHub Stars" />
         </div>
     </header>
 
     @* ═══════════════════════════════════════════════════════════════ *@
     @* Main Component Demo                                              *@
     @* ═══════════════════════════════════════════════════════════════ *@
-    <main class="demo-main">
+    <section class="demo-section">
+        <div class="section-header">
+            <h2>
+                <span class="section-icon">🔬</span>
+                Interactive Demo
+            </h2>
+            <p class="section-subtitle">Explore the component with different JSON data samples</p>
+        </div>
+
         <div class="viewer-wrapper">
             <JsonViewer JsonData="@sampleJson" IsEditable="true" />
         </div>
-    </main>
+
+        <div class="sample-tabs">
+            <button class="sample-tab @(activeTemplate == "simple" ? "active" : "")" @onclick="LoadSimpleJson">
+                <span class="tab-icon">📄</span>
+                <span class="tab-name">Simple</span>
+            </button>
+            <button class="sample-tab @(activeTemplate == "nested" ? "active" : "")" @onclick="LoadNestedJson">
+                <span class="tab-icon">📁</span>
+                <span class="tab-name">Nested</span>
+            </button>
+            <button class="sample-tab @(activeTemplate == "array" ? "active" : "")" @onclick="LoadArrayJson">
+                <span class="tab-icon">📊</span>
+                <span class="tab-name">Array</span>
+            </button>
+            <button class="sample-tab @(activeTemplate == "complex" ? "active" : "")" @onclick="LoadComplexJson">
+                <span class="tab-icon">🏢</span>
+                <span class="tab-name">Complex</span>
+            </button>
+        </div>
+
+    </section>
 
     @* ═══════════════════════════════════════════════════════════════ *@
-    @* Sample Templates                                                 *@
+    @* Quick Start Guide                                                *@
     @* ═══════════════════════════════════════════════════════════════ *@
-    <section class="templates-section">
-        <h3 class="section-title">
-            <span class="section-icon">📋</span>
-            Try Sample Data
-        </h3>
-        <div class="template-buttons">
-            <button class="template-btn @(activeTemplate == "simple" ? "active" : "")" @onclick="LoadSimpleJson">
-                <span class="btn-icon">📄</span>
-                <span class="btn-text">Simple</span>
-            </button>
-            <button class="template-btn @(activeTemplate == "nested" ? "active" : "")" @onclick="LoadNestedJson">
-                <span class="btn-icon">📁</span>
-                <span class="btn-text">Nested</span>
-            </button>
-            <button class="template-btn @(activeTemplate == "array" ? "active" : "")" @onclick="LoadArrayJson">
-                <span class="btn-icon">📊</span>
-                <span class="btn-text">Array</span>
-            </button>
-            <button class="template-btn @(activeTemplate == "complex" ? "active" : "")" @onclick="LoadComplexJson">
-                <span class="btn-icon">🏢</span>
-                <span class="btn-text">Complex</span>
-            </button>
+    <section class="quickstart-section">
+        <div class="quickstart-content">
+            <div class="quickstart-info">
+                <h2>
+                    <span class="section-icon">🚀</span>
+                    Quick Start
+                </h2>
+                <p class="quickstart-description">Get started with JsonViewer.Blazor in just a few simple steps</p>
+                
+                <div class="installation-step">
+                    <h3>1. Install Package</h3>
+                    <div class="code-block">
+                        <code>dotnet add package JsonViewer.Blazor</code>
+                        <button class="copy-btn" title="Copy to clipboard">📋</button>
+                    </div>
+                </div>
+
+                <div class="installation-step">
+                    <h3>2. Use the Component</h3>
+                    <div class="code-block">
+                        <code>@@lt;JsonViewer JsonData="@@jsonData" IsEditable="true" /@@gt;</code>
+                        <button class="copy-btn" title="Copy to clipboard">📋</button>
+                    </div>
+                </div>
+
+                <p class="quickstart-note">✨ Full documentation available on <a href="https://github.com/JsonViewer-Component/Blazor#readme" target="_blank">GitHub</a></p>
+            </div>
         </div>
     </section>
 
@@ -80,40 +116,56 @@
     @* Features Section                                                 *@
     @* ═══════════════════════════════════════════════════════════════ *@
     <section class="features-section">
-        <h3 class="section-title">
-            <span class="section-icon">✨</span>
-            Features
-        </h3>
+        <div class="section-header">
+            <h2>
+                <span class="section-icon">✨</span>
+                Powerful Features
+            </h2>
+            <p class="section-subtitle">Everything you need for JSON visualization and manipulation</p>
+        </div>
+        
         <div class="features-grid">
             <div class="feature-card">
-                <span class="feature-icon">🎨</span>
+                <div class="feature-icon-wrapper">
+                    <span class="feature-icon">🎨</span>
+                </div>
                 <h4>VS Code Styling</h4>
-                <p>Beautiful syntax highlighting</p>
+                <p>Beautiful syntax highlighting with familiar VS Code aesthetics</p>
             </div>
             <div class="feature-card">
-                <span class="feature-icon">🔍</span>
-                <h4>Search</h4>
-                <p>Real-time search with navigation</p>
+                <div class="feature-icon-wrapper">
+                    <span class="feature-icon">🔍</span>
+                </div>
+                <h4>Smart Search</h4>
+                <p>Real-time search with navigation and highlighting</p>
             </div>
             <div class="feature-card">
-                <span class="feature-icon">📊</span>
+                <div class="feature-icon-wrapper">
+                    <span class="feature-icon">📊</span>
+                </div>
                 <h4>Statistics</h4>
-                <p>Size, depth, type distribution</p>
+                <p>Size, depth, and type distribution analysis</p>
             </div>
             <div class="feature-card">
-                <span class="feature-icon">🌙</span>
-                <h4>Themes</h4>
-                <p>Dark & Light with persistence</p>
+                <div class="feature-icon-wrapper">
+                    <span class="feature-icon">🌙</span>
+                </div>
+                <h4>Theme Support</h4>
+                <p>Dark & Light themes with automatic persistence</p>
             </div>
             <div class="feature-card">
-                <span class="feature-icon">✏️</span>
+                <div class="feature-icon-wrapper">
+                    <span class="feature-icon">✏️</span>
+                </div>
                 <h4>Edit Mode</h4>
-                <p>Modify JSON with validation</p>
+                <p>Modify and validate JSON in real-time</p>
             </div>
             <div class="feature-card">
-                <span class="feature-icon">📥</span>
-                <h4>Export</h4>
-                <p>Copy & download JSON</p>
+                <div class="feature-icon-wrapper">
+                    <span class="feature-icon">📥</span>
+                </div>
+                <h4>Export & Share</h4>
+                <p>Copy and download JSON data easily</p>
             </div>
         </div>
     </section>
@@ -122,21 +174,87 @@
     @* Footer                                                           *@
     @* ═══════════════════════════════════════════════════════════════ *@
     <footer class="demo-footer">
-        <p>
-            Made with ❤️ by
-            <a href="https://github.com/JsonViewer-Component" target="_blank">JsonViewer-Component</a>
-        </p>
-        <p class="version">v0.0.4-beta • MIT License</p>
+        <div class="footer-content">
+            <p class="footer-credit">
+                Made with ❤️ by
+                <a href="https://github.com/JsonViewer-Component" target="_blank">JsonViewer-Component</a>
+            </p>
+            <p class="footer-meta">v0.0.4-beta • MIT License • <a href="https://github.com/JsonViewer-Component/Blazor" target="_blank">GitHub</a></p>
+        </div>
     </footer>
 </div>
 
 @code {
     private string sampleJson = string.Empty;
     private string activeTemplate = "simple";
+    private bool isDarkTheme = true;
+    private bool _isInitialized = false;
 
     protected override void OnInitialized()
     {
         LoadSimpleJson();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && !_isInitialized)
+        {
+            _isInitialized = true;
+            await LoadThemePreference();
+            await ApplyTheme();
+            StateHasChanged();
+        }
+    }
+
+    private async Task LoadThemePreference()
+    {
+        try
+        {
+            var savedTheme = await JSRuntime.InvokeAsync<string>("demoTheme.getTheme");
+            if (!string.IsNullOrEmpty(savedTheme))
+            {
+                isDarkTheme = savedTheme != "light";
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading theme: {ex.Message}");
+            isDarkTheme = true;
+        }
+    }
+
+    private async Task ToggleTheme()
+    {
+        isDarkTheme = !isDarkTheme;
+        await SaveThemePreference();
+        await ApplyTheme();
+        StateHasChanged();
+    }
+
+    private async Task SaveThemePreference()
+    {
+        try
+        {
+            var themeValue = isDarkTheme ? "dark" : "light";
+            await JSRuntime.InvokeVoidAsync("demoTheme.saveTheme", themeValue);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error saving theme: {ex.Message}");
+        }
+    }
+
+    private async Task ApplyTheme()
+    {
+        try
+        {
+            var themeValue = isDarkTheme ? "dark" : "light";
+            await JSRuntime.InvokeVoidAsync("demoTheme.setTheme", themeValue);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error applying theme: {ex.Message}");
+        }
     }
 
     private void LoadSimpleJson()
@@ -201,8 +319,8 @@
       ""inStock"": false
     }
   ],
-  ""total"": 3,
-  ""currency"": ""USD""
+  ""totalItems"": 3,
+  ""totalValue"": 2849.97
 }";
     }
 
@@ -212,55 +330,36 @@
         sampleJson = @"{
   ""company"": {
     ""name"": ""Tech Innovations Inc."",
-    ""founded"": 2010,
-    ""public"": true,
+    ""founded"": 2015,
+    ""headquarters"": {
+      ""city"": ""San Francisco"",
+      ""country"": ""USA""
+    },
     ""employees"": [
       {
         ""id"": 1,
         ""name"": ""Alice Johnson"",
-        ""role"": ""CEO"",
-        ""department"": ""Executive"",
-        ""skills"": [""Leadership"", ""Strategy"", ""Finance""]
+        ""role"": ""Senior Developer"",
+        ""skills"": [""C#"", ""Blazor"", ""Azure""],
+        ""yearsOfExperience"": 8
       },
       {
         ""id"": 2,
-        ""name"": ""Bob Williams"",
-        ""role"": ""CTO"",
-        ""department"": ""Engineering"",
-        ""skills"": [""C#"", ""Blazor"", ""Azure"", ""Architecture""]
-      },
-      {
-        ""id"": 3,
-        ""name"": ""Carol Davis"",
-        ""role"": ""Lead Designer"",
-        ""department"": ""Design"",
-        ""skills"": [""UI/UX"", ""Figma"", ""CSS""]
+        ""name"": ""Bob Smith"",
+        ""role"": ""UX Designer"",
+        ""skills"": [""Figma"", ""UI/UX"", ""Design Systems""],
+        ""yearsOfExperience"": 5
       }
     ],
-    ""offices"": {
-      ""headquarters"": {
-        ""city"": ""San Francisco"",
-        ""country"": ""USA"",
-        ""employees"": 150
-      },
-      ""branches"": [
-        {
-          ""city"": ""London"",
-          ""country"": ""UK"",
-          ""employees"": 45
-        },
-        {
-          ""city"": ""Tokyo"",
-          ""country"": ""Japan"",
-          ""employees"": 30
-        }
-      ]
-    },
-    ""financials"": {
-      ""revenue"": 50000000,
-      ""profit"": 8500000,
-      ""growth"": 0.23
-    }
+    ""projects"": [
+      {
+        ""name"": ""JsonViewer.Blazor"",
+        ""status"": ""Active"",
+        ""contributors"": 12,
+        ""stars"": 1250,
+        ""lastUpdated"": ""2025-12-03""
+      }
+    ]
   }
 }";
     }

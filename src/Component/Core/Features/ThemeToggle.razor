@@ -1,4 +1,4 @@
-﻿@using Microsoft.JSInterop
+@using Microsoft.JSInterop
 @inject IJSRuntime jsRuntime
 
 <button @onclick="ToggleTheme"
@@ -9,7 +9,7 @@
 
 @code {
     [Parameter]
-    public bool IsDark { get; set; }
+    public bool IsDark { get; set; } = true;
 
     [Parameter]
     public EventCallback<bool> OnThemeChanged { get; set; }
@@ -39,7 +39,7 @@
                     }
 
                     // Default
-                    return 'light';
+                    return 'dark';
                 })()
             ");
 
@@ -62,7 +62,7 @@
         catch (Exception ex)
         {
             Console.WriteLine($"Error loading theme: {ex.Message}");
-            IsDark = false; // Default light
+            IsDark = true; // Default dark
         }
     }
 

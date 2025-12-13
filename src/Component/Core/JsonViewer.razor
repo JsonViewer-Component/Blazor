@@ -1,4 +1,4 @@
-﻿@page "/json-viewer"
+@page "/json-viewer"
 @using Component.Core.Features
 @using Component.Models
 @using Microsoft.JSInterop
@@ -303,7 +303,7 @@
     private JsonNode? jsonToken;
     private Dictionary<string, bool> expandedStates = new();
     private bool allExpanded = true;
-    private bool isDarkTheme = false;
+    private bool isDarkTheme = true;
     private bool isFullScreen = false;
     private bool isEditMode = true;
     private string editableJsonText = "";

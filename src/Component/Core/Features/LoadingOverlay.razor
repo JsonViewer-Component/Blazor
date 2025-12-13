@@ -1,4 +1,4 @@
-﻿@* LoadingOverlay.razor - Enhanced Loading Component *@
+@* LoadingOverlay.razor - Enhanced Loading Component *@
 
 @if (IsVisible)
 {
@@ -34,7 +34,7 @@
 
 @code {
     [Parameter] public bool IsVisible { get; set; }
-    [Parameter] public bool IsDarkTheme { get; set; }
+    [Parameter] public bool IsDarkTheme { get; set; } = true;
     [Parameter] public string Message { get; set; } = "Processing...";
     [Parameter] public bool ShowProgress { get; set; } = false;
     [Parameter] public int Progress { get; set; } = 0;

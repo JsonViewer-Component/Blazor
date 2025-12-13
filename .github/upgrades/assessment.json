@@ -1,0 +1,177 @@
+{
+  "settings": {
+    "components": {
+      "code": false,
+      "binaries": false
+    },
+    "targetId": "net8.0",
+    "targetDisplayName": ".NETCoreApp,Version=v8.0"
+  },
+  "analysisStartTime": "2025-12-13T20:54:48.7049998Z",
+  "analysisEndTime": "2025-12-13T20:54:50.9150253Z",
+  "privacyModeHelpUrl": "https://go.microsoft.com/fwlink/?linkid=2270980",
+  "stats": {
+    "summary": {
+      "projects": 2,
+      "issues": 2,
+      "incidents": 2,
+      "effort": 2
+    },
+    "charts": {
+      "severity": {
+        "Mandatory": 1,
+        "Optional": 0,
+        "Potential": 1,
+        "Information": 0
+      },
+      "category": {
+        "NuGet": 1,
+        "Project": 1
+      }
+    }
+  },
+  "projects": [
+    {
+      "path": "src\\Blazor.Demo\\Blazor.Demo.csproj",
+      "startingProject": true,
+      "issues": 0,
+      "storyPoints": 0,
+      "properties": {
+        "appName": "Blazor.Demo",
+        "projectKind": "AspNetCore",
+        "frameworks": [
+          "net8.0"
+        ],
+        "languages": [
+          "C#"
+        ],
+        "tools": [
+          "MSBuild"
+        ],
+        "isSdkStyle": true,
+        "numberOfFiles": 21,
+        "numberOfCodeFiles": 1,
+        "linesTotal": 2591,
+        "linesOfCode": 14,
+        "totalApiScanned": 0,
+        "minLinesOfCodeToChange": 0,
+        "maxLinesOfCodeToChange": 0
+      },
+      "ruleInstances": [],
+      "features": []
+    },
+    {
+      "path": "src\\Component\\Component.csproj",
+      "startingProject": true,
+      "issues": 2,
+      "storyPoints": 2,
+      "properties": {
+        "appName": "Component",
+        "projectKind": "ClassLibrary",
+        "frameworks": [
+          "net6.0",
+          "net7.0",
+          "net8.0",
+          "net9.0",
+          "net10.0"
+        ],
+        "languages": [
+          "C#"
+        ],
+        "tools": [
+          "MSBuild"
+        ],
+        "isSdkStyle": true,
+        "numberOfFiles": 14,
+        "numberOfCodeFiles": 3,
+        "linesTotal": 5552,
+        "linesOfCode": 151,
+        "totalApiScanned": 4631,
+        "minLinesOfCodeToChange": 0,
+        "maxLinesOfCodeToChange": 0
+      },
+      "ruleInstances": [
+        {
+          "incidentId": "40d63e1e-bf2f-4da6-ad71-2f3aa40bddb9",
+          "ruleId": "NuGet.0002",
+          "projectPath": "src\\Component\\Component.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "Microsoft.AspNetCore.Components.Web, 6.0.36\n\nRecommendation:\n\nRemove Microsoft.AspNetCore.Components.Web, and replace with new package Microsoft.AspNetCore.Components.Web 8.0.22",
+              "protected": "Microsoft.AspNetCore.Components.Web, 6.0.36\n\nRecommendation:\n\nRemove Microsoft.AspNetCore.Components.Web, and replace with new package Microsoft.AspNetCore.Components.Web 8.0.22"
+            },
+            "kind": "File",
+            "path": "src\\Component\\Component.csproj",
+            "snippet": "Microsoft.AspNetCore.Components.Web, 6.0.36\n\nRecommendation:\n\nRemove Microsoft.AspNetCore.Components.Web, and replace with new package Microsoft.AspNetCore.Components.Web 8.0.22",
+            "protectedSnippet": "Microsoft.AspNetCore.Components.Web, 6.0.36\n\nRecommendation:\n\nRemove Microsoft.AspNetCore.Components.Web, and replace with new package Microsoft.AspNetCore.Components.Web 8.0.22",
+            "label": "Microsoft.AspNetCore.Components.Web 6.0.36",
+            "properties": {
+              "PackageId": "Microsoft.AspNetCore.Components.Web",
+              "PackageVersion": "6.0.36",
+              "PackageNewVersion": "8.0.22",
+              "PackageReplacements": null
+            }
+          }
+        },
+        {
+          "incidentId": "fcb525b1-4cd0-4ecb-9878-ef8004e0c14c",
+          "ruleId": "Project.0002",
+          "projectPath": "src\\Component\\Component.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "Current target framework: net6.0;net7.0;net8.0;net9.0;net10.0\nRecommended target framework: net6.0;net7.0;net8.0;net9.0;net10.0;net8.0",
+              "protected": "Current target framework: net6.0;net7.0;net8.0;net9.0;net10.0\nRecommended target framework: net6.0;net7.0;net8.0;net9.0;net10.0;net8.0"
+            },
+            "kind": "File",
+            "path": "src\\Component\\Component.csproj",
+            "snippet": "Current target framework: net6.0;net7.0;net8.0;net9.0;net10.0\nRecommended target framework: net6.0;net7.0;net8.0;net9.0;net10.0;net8.0",
+            "protectedSnippet": "Current target framework: net6.0;net7.0;net8.0;net9.0;net10.0\nRecommended target framework: net6.0;net7.0;net8.0;net9.0;net10.0;net8.0",
+            "properties": {
+              "CurrentTargetFramework": "net6.0;net7.0;net8.0;net9.0;net10.0",
+              "RecommendedTargetFramework": "net6.0;net7.0;net8.0;net9.0;net10.0;net8.0"
+            }
+          }
+        }
+      ],
+      "features": []
+    }
+  ],
+  "rules": {
+    "NuGet.0002": {
+      "id": "NuGet.0002",
+      "isFeature": false,
+      "description": "NuGet package upgrade is recommended for selected target framework.\n\nStandard .NET packages are recommended to have versions matching version of .NET that project targets.\n\nSome other packages also are known to work better for selected target frameworks.",
+      "label": "NuGet package upgrade is recommended",
+      "severity": "Potential",
+      "effort": 1,
+      "links": [
+        {
+          "url": "https://go.microsoft.com/fwlink/?linkid=2262530",
+          "isCustom": false
+        }
+      ]
+    },
+    "Project.0002": {
+      "id": "Project.0002",
+      "isFeature": false,
+      "description": "Project\u0027s target framework(s) needs to be changed to the new target framework that you selected for this upgrade.\n\nDuring upgrade target framework will be adjusted to corresponding platform when applicable. In some cases project would result in multiple target frameworks after the upgrade if it was using features that now have their own platforms in modern .NET frameworks (windows, iOS, Android etc).",
+      "label": "Project\u0027s target framework(s) needs to be changed",
+      "severity": "Mandatory",
+      "effort": 1,
+      "links": [
+        {
+          "title": "Overview of porting from .NET Framework to .NET",
+          "url": "https://go.microsoft.com/fwlink/?linkid=2265227",
+          "isCustom": false
+        },
+        {
+          "title": ".NET project SDKs",
+          "url": "https://go.microsoft.com/fwlink/?linkid=2265226",
+          "isCustom": false
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,272 @@
+name: Manual LinkedIn Notification
+
+on:
+  workflow_dispatch:
+    inputs:
+      include_prerelease:
+        description: 'Include pre-release versions?'
+        required: false
+        type: boolean
+        default: true
+      custom_message:
+        description: 'Add custom message (optional)'
+        required: false
+        type: string
+
+env:
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+  DOTNET_NOLOGO: true
+
+jobs:
+  send-notification:
+    name: Send Manual LinkedIn Notification
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fetch Latest Release
+        id: latest_release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "Fetching latest release..."
+
+          if [ "${{ inputs.include_prerelease }}" == "true" ]; then
+            echo "Including pre-release versions..."
+            RELEASE_DATA=$(gh api repos/${{ github.repository }}/releases --jq '.[0]')
+          else
+            echo "Stable releases only..."
+            RELEASE_DATA=$(gh api repos/${{ github.repository }}/releases --jq '[.[] | select(.prerelease == false)][0]')
+          fi
+
+          if [ -z "$RELEASE_DATA" ] || [ "$RELEASE_DATA" == "null" ]; then
+            echo "No release found!"
+            exit 1
+          fi
+
+          TAG_NAME=$(echo "$RELEASE_DATA" | jq -r '.tag_name // empty')
+          NAME=$(echo "$RELEASE_DATA" | jq -r '.name // empty')
+          BODY=$(echo "$RELEASE_DATA" | jq -r '.body // empty')
+          URL=$(echo "$RELEASE_DATA" | jq -r '.html_url // empty')
+          IS_PRERELEASE=$(echo "$RELEASE_DATA" | jq -r '.prerelease // false')
+          PUBLISHED_AT=$(echo "$RELEASE_DATA" | jq -r '.published_at // empty')
+
+          VERSION="${TAG_NAME#v}"
+
+          echo "Found release: $TAG_NAME (version: $VERSION)"
+
+          echo "tag_name=$TAG_NAME" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "name=$NAME" >> "$GITHUB_OUTPUT"
+          echo "url=$URL" >> "$GITHUB_OUTPUT"
+          echo "is_prerelease=$IS_PRERELEASE" >> "$GITHUB_OUTPUT"
+          echo "published_at=$PUBLISHED_AT" >> "$GITHUB_OUTPUT"
+
+          printf '%s' "$BODY" > release_body.txt
+          echo "Release body saved to file"
+
+      - name: Prepare LinkedIn Post
+        id: prepare_post
+        run: |
+          TAG_NAME="${{ steps.latest_release.outputs.tag_name }}"
+          VERSION="${{ steps.latest_release.outputs.version }}"
+          NAME="${{ steps.latest_release.outputs.name }}"
+          URL="${{ steps.latest_release.outputs.url }}"
+          IS_PRERELEASE="${{ steps.latest_release.outputs.is_prerelease }}"
+          PUBLISHED_AT="${{ steps.latest_release.outputs.published_at }}"
+          CUSTOM_MSG="${{ inputs.custom_message }}"
+
+          BODY=$(cat release_body.txt 2>/dev/null || echo "")
+
+          # Clean markdown for LinkedIn (remove markdown syntax, keep plain text)
+          BODY_TEXT=$(echo "$BODY" | \
+            sed 's/^### \(.*\)$/\1/g' | \
+            sed 's/^## \(.*\)$/\1/g' | \
+            sed 's/^# \(.*\)$/\1/g' | \
+            sed 's/\*\*\([^*]*\)\*\*/\1/g' | \
+            sed 's/`\([^`]*\)`/\1/g' | \
+            sed 's/\[\([^\]]*\)\]([^)]*)/\1/g')
+
+          # Truncate if too long (LinkedIn limit: 3000 chars for text)
+          if [ ${#BODY_TEXT} -gt 1500 ]; then
+            BODY_TEXT="${BODY_TEXT:0:1500}...\n\nSee full release notes on GitHub."
+          fi
+
+          if [ "$IS_PRERELEASE" == "true" ]; then
+            RELEASE_TYPE="⚠️ Pre-release"
+          else
+            RELEASE_TYPE="✅ Stable Release"
+          fi
+
+          if [ -n "$PUBLISHED_AT" ]; then
+            FORMATTED_DATE=$(date -d "$PUBLISHED_AT" "+%Y-%m-%d %H:%M UTC" 2>/dev/null || echo "$PUBLISHED_AT")
+          else
+            FORMATTED_DATE="N/A"
+          fi
+
+          # Build LinkedIn post text
+          cat > linkedin_post.txt << MSGEOF
+🚀 New Release: JsonViewer.Blazor ${TAG_NAME}
+
+${RELEASE_TYPE}
+
+📦 Version: ${VERSION}
+📝 Name: ${NAME}
+📅 Published: ${FORMATTED_DATE}
+
+📋 Release Notes:
+${BODY_TEXT}
+
+🔗 Links:
+• GitHub: ${URL}
+• NuGet: https://www.nuget.org/packages/JsonViewer.Blazor/${VERSION}
+
+💻 Install:
+dotnet add package JsonViewer.Blazor --version ${VERSION}
+MSGEOF
+
+          if [ -n "$CUSTOM_MSG" ]; then
+            echo "" >> linkedin_post.txt
+            echo "💬 ${CUSTOM_MSG}" >> linkedin_post.txt
+          fi
+
+          echo "" >> linkedin_post.txt
+          echo "#JsonViewer #Blazor #DotNet #OpenSource #CSharp #WebDevelopment" >> linkedin_post.txt
+
+          echo "Post prepared successfully!"
+          echo "Post length: $(wc -c < linkedin_post.txt) bytes"
+
+      - name: Send to LinkedIn
+        env:
+          LINKEDIN_ACCESS_TOKEN: ${{ secrets.LINKEDIN_ACCESS_TOKEN }}
+          LINKEDIN_ORG_ID: ${{ secrets.LINKEDIN_ORG_ID }}
+        run: |
+          if [ -z "$LINKEDIN_ACCESS_TOKEN" ] || [ -z "$LINKEDIN_ORG_ID" ]; then
+            echo "LinkedIn credentials not configured!"
+            echo "Please set LINKEDIN_ACCESS_TOKEN and LINKEDIN_ORG_ID secrets."
+            exit 1
+          fi
+
+          POST_TEXT=$(cat linkedin_post.txt)
+
+          echo "Sending post to LinkedIn..."
+
+          # LinkedIn API v2 requires UGC Post format
+          # First, create the UGC Post
+          UGC_POST_RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
+            "https://api.linkedin.com/v2/ugcPosts" \
+            -H "Authorization: Bearer ${LINKEDIN_ACCESS_TOKEN}" \
+            -H "Content-Type: application/json" \
+            -H "X-Restli-Protocol-Version: 2.0.0" \
+            -d "$(jq -n \
+              --arg author "urn:li:organization:${LINKEDIN_ORG_ID}" \
+              --arg text "$POST_TEXT" \
+              --arg visibility "PUBLIC" \
+              '{
+                author: $author,
+                lifecycleState: "PUBLISHED",
+                specificContent: {
+                  "com.linkedin.ugc.ShareContent": {
+                    shareCommentary: {
+                      text: $text
+                    },
+                    shareMediaCategory: "NONE"
+                  }
+                },
+                visibility: {
+                  "com.linkedin.ugc.MemberNetworkVisibility": $visibility
+                }
+              }')")
+
+          HTTP_CODE=$(echo "$UGC_POST_RESPONSE" | tail -n1)
+          RESP_BODY=$(echo "$UGC_POST_RESPONSE" | sed '$d')
+
+          if [ "$HTTP_CODE" -eq 201 ]; then
+            echo "Post sent successfully!"
+            POST_ID=$(echo "$RESP_BODY" | jq -r '.id // empty')
+            if [ -n "$POST_ID" ] && [ "$POST_ID" != "null" ]; then
+              echo "Post ID: $POST_ID"
+            fi
+          else
+            echo "Failed to send post!"
+            echo "HTTP Code: $HTTP_CODE"
+            echo "Response: $RESP_BODY"
+
+            # Try alternative method: Share API (simpler, but may require different permissions)
+            echo "Trying alternative Share API method..."
+
+            SHARE_RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
+              "https://api.linkedin.com/v2/shares" \
+              -H "Authorization: Bearer ${LINKEDIN_ACCESS_TOKEN}" \
+              -H "Content-Type: application/json" \
+              -H "X-Restli-Protocol-Version: 2.0.0" \
+              -d "$(jq -n \
+                --arg text "$POST_TEXT" \
+                --arg url "${{ steps.latest_release.outputs.url }}" \
+                '{
+                  content: {
+                    "com.linkedin.ugc.ShareContent": {
+                      shareCommentary: {
+                        text: $text
+                      },
+                      shareMediaCategory: "ARTICLE",
+                      media: [
+                        {
+                          status: "READY",
+                          originalUrl: $url
+                        }
+                      ]
+                    }
+                  },
+                  distribution: {
+                    linkedInDistributionTarget: {}
+                  },
+                  owner: "urn:li:organization:${LINKEDIN_ORG_ID}",
+                  subject: "JsonViewer.Blazor ${TAG_NAME} Released"
+                }')")
+
+            SHARE_HTTP_CODE=$(echo "$SHARE_RESPONSE" | tail -n1)
+            SHARE_RESP_BODY=$(echo "$SHARE_RESPONSE" | sed '$d')
+
+            if [ "$SHARE_HTTP_CODE" -eq 201 ]; then
+              echo "Post sent successfully via Share API!"
+              SHARE_ID=$(echo "$SHARE_RESP_BODY" | jq -r '.id // empty')
+              if [ -n "$SHARE_ID" ] && [ "$SHARE_ID" != "null" ]; then
+                echo "Share ID: $SHARE_ID"
+              fi
+            else
+              echo "Share API also failed!"
+              echo "HTTP Code: $SHARE_HTTP_CODE"
+              echo "Response: $SHARE_RESP_BODY"
+              exit 1
+            fi
+          fi
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "## LinkedIn Notification Summary" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "### Release Info" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Property | Value |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|----------|-------|" >> "$GITHUB_STEP_SUMMARY"
+          echo "| **Tag** | ${{ steps.latest_release.outputs.tag_name }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| **Version** | ${{ steps.latest_release.outputs.version }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| **Name** | ${{ steps.latest_release.outputs.name }} |" >> "$GITHUB_STEP_SUMMARY"
+          if [ "${{ steps.latest_release.outputs.is_prerelease }}" == "true" ]; then
+            echo "| **Type** | Pre-release |" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "| **Type** | Stable |" >> "$GITHUB_STEP_SUMMARY"
+          fi
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "### Links" >> "$GITHUB_STEP_SUMMARY"
+          echo "- [GitHub Release](${{ steps.latest_release.outputs.url }})" >> "$GITHUB_STEP_SUMMARY"
+          echo "- [NuGet Package](https://www.nuget.org/packages/JsonViewer.Blazor/${{ steps.latest_release.outputs.version }})" >> "$GITHUB_STEP_SUMMARY"
+
