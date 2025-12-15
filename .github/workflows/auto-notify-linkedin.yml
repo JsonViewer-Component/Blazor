@@ -1,0 +1,173 @@
+name: Auto LinkedIn Notification
+
+on:
+  workflow_run:
+    workflows: ["📦 Publish Package"]
+    types:
+      - completed
+
+env:
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+  DOTNET_NOLOGO: true
+
+jobs:
+  notify:
+    name: Send LinkedIn Notification
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get Release Info
+        id: release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "Fetching latest release..."
+
+          RELEASE=$(gh api repos/${{ github.repository }}/releases --jq '.[0]')
+
+          if [ -z "$RELEASE" ] || [ "$RELEASE" == "null" ]; then
+            echo "No release found!"
+            exit 1
+          fi
+
+          TAG=$(echo "$RELEASE" | jq -r '.tag_name // empty')
+          NAME=$(echo "$RELEASE" | jq -r '.name // empty')
+          BODY=$(echo "$RELEASE" | jq -r '.body // empty')
+          URL=$(echo "$RELEASE" | jq -r '.html_url // empty')
+          VERSION="${TAG#v}"
+
+          echo "Found release: $TAG (version: $VERSION)"
+
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "name=$NAME" >> "$GITHUB_OUTPUT"
+          echo "url=$URL" >> "$GITHUB_OUTPUT"
+          
+          # Save original release body (keep emojis and markdown)
+          echo "$BODY" > release_body.txt
+          echo "Release body saved (preserving emojis and markdown)"
+
+      - name: Create Post Message
+        id: message
+        run: |
+          TAG="${{ steps.release.outputs.tag }}"
+          VERSION="${{ steps.release.outputs.version }}"
+          NAME="${{ steps.release.outputs.name }}"
+          URL="${{ steps.release.outputs.url }}"
+          
+          # Read original release body (with emojis and markdown)
+          RELEASE_BODY=$(cat release_body.txt 2>/dev/null || echo "")
+          
+          # LinkedIn supports markdown, so we keep it
+          # But we need to clean up some markdown that LinkedIn doesn't support well
+          # Remove HTML comments and code blocks markers if they cause issues
+          CLEANED_BODY=$(echo "$RELEASE_BODY" | \
+            sed 's/<!--.*-->//g' | \
+            sed '/^```/,/^```/d' | \
+            sed 's/^---$//g')
+          
+          # Truncate if too long (LinkedIn limit: 3000 chars, but we keep some margin)
+          BODY_LENGTH=${#CLEANED_BODY}
+          if [ $BODY_LENGTH -gt 2500 ]; then
+            CLEANED_BODY="${CLEANED_BODY:0:2500}...\n\n📖 See full release notes on GitHub."
+          fi
+          
+          # Create LinkedIn post with header and release body
+          {
+            printf '🚀 JsonViewer.Blazor %s Released!\n\n' "$TAG"
+            printf '%s\n\n' "$CLEANED_BODY"
+            printf '━━━━━━━━━━━━━━━━━━━━\n\n'
+            printf '📦 Install:\n'
+            printf '```\n'
+            printf 'dotnet add package JsonViewer.Blazor --version %s\n' "$VERSION"
+            printf '```\n\n'
+            printf '🔗 Links:\n'
+            printf '• 📚 GitHub: %s\n' "$URL"
+            printf '• 📦 NuGet: https://www.nuget.org/packages/JsonViewer.Blazor/%s\n\n' "$VERSION"
+            printf '#JsonViewer #Blazor #DotNet #OpenSource #CSharp #WebDevelopment'
+          } > message.txt
+          
+          # Read message and encode for JSON
+          MESSAGE_CONTENT=$(cat message.txt)
+          MESSAGE_ENCODED=$(echo "$MESSAGE_CONTENT" | jq -Rs .)
+          echo "encoded=$MESSAGE_ENCODED" >> "$GITHUB_OUTPUT"
+          
+          echo "Message prepared successfully!"
+          echo "Message length: $(wc -c < message.txt) bytes"
+          echo "Body length: $BODY_LENGTH characters"
+
+      - name: Send to Make.com
+        env:
+          MAKE_WEBHOOK_URL: ${{ secrets.MAKE_WEBHOOK_URL }}
+        run: |
+          if [ -z "$MAKE_WEBHOOK_URL" ]; then
+            echo "Make.com webhook URL not configured!"
+            echo "Please set MAKE_WEBHOOK_URL secret."
+            exit 1
+          fi
+
+          TAG="${{ steps.release.outputs.tag }}"
+          URL="${{ steps.release.outputs.url }}"
+
+          # Read message from file and encode it properly
+          MESSAGE_CONTENT=$(cat message.txt)
+          MESSAGE_ENCODED=$(echo "$MESSAGE_CONTENT" | jq -Rs .)
+
+          echo "Sending to Make.com webhook..."
+
+          # Build JSON payload using jq to handle special characters properly
+          JSON_PAYLOAD=$(jq -n \
+            --argjson message "$MESSAGE_ENCODED" \
+            --arg version "$TAG" \
+            --arg url "$URL" \
+            '{message: $message, version: $version, url: $url}')
+
+          RESPONSE=$(curl -s -w "\n%{http_code}" -X POST "$MAKE_WEBHOOK_URL" \
+            -H "Content-Type: application/json" \
+            -d "$JSON_PAYLOAD")
+
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+          RESP_BODY=$(echo "$RESPONSE" | sed '$d')
+
+          if [ "$HTTP_CODE" -eq 200 ] || [ "$HTTP_CODE" -eq 201 ] || [ "$HTTP_CODE" -eq 202 ]; then
+            echo "✅ Message sent successfully to Make.com!"
+            echo "HTTP Code: $HTTP_CODE"
+            if [ -n "$RESP_BODY" ]; then
+              echo "Response: $RESP_BODY"
+            fi
+          else
+            echo "❌ Failed to send message!"
+            echo "HTTP Code: $HTTP_CODE"
+            echo "Response: $RESP_BODY"
+            exit 1
+          fi
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "## LinkedIn Notification Summary" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "### Release Info" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Property | Value |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|----------|-------|" >> "$GITHUB_STEP_SUMMARY"
+          echo "| **Tag** | ${{ steps.release.outputs.tag }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| **Version** | ${{ steps.release.outputs.version }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| **Name** | ${{ steps.release.outputs.name }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "### Links" >> "$GITHUB_STEP_SUMMARY"
+          echo "- [GitHub Release](${{ steps.release.outputs.url }})" >> "$GITHUB_STEP_SUMMARY"
+          echo "- [NuGet Package](https://www.nuget.org/packages/JsonViewer.Blazor/${{ steps.release.outputs.version }})" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "### Trigger Info" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Triggered by: **${{ github.event.workflow_run.name }}**" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Workflow Run: [#${{ github.event.workflow_run.run_number }}](${{ github.event.workflow_run.html_url }})" >> "$GITHUB_STEP_SUMMARY"
+
