@@ -9,6 +9,10 @@ on:
         type: boolean
         default: true
 
+env:
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+  DOTNET_NOLOGO: true
+
 jobs:
   send-notification:
     name: Send Manual LinkedIn Notification
@@ -17,30 +21,46 @@ jobs:
       contents: read
 
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
       - name: Fetch Latest Release
         id: release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          echo "Fetching latest release..."
+
           if [ "${{ inputs.include_prerelease }}" == "true" ]; then
+            echo "Including pre-release versions..."
             RELEASE=$(gh api repos/${{ github.repository }}/releases --jq '.[0]')
           else
+            echo "Stable releases only..."
             RELEASE=$(gh api repos/${{ github.repository }}/releases --jq '[.[] | select(.prerelease == false)][0]')
           fi
 
-          TAG=$(echo "$RELEASE" | jq -r '.tag_name')
-          NAME=$(echo "$RELEASE" | jq -r '.name')
-          BODY=$(echo "$RELEASE" | jq -r '.body')
-          URL=$(echo "$RELEASE" | jq -r '.html_url')
+          if [ -z "$RELEASE" ] || [ "$RELEASE" == "null" ]; then
+            echo "No release found!"
+            exit 1
+          fi
+
+          TAG=$(echo "$RELEASE" | jq -r '.tag_name // empty')
+          NAME=$(echo "$RELEASE" | jq -r '.name // empty')
+          BODY=$(echo "$RELEASE" | jq -r '.body // empty')
+          URL=$(echo "$RELEASE" | jq -r '.html_url // empty')
           VERSION="${TAG#v}"
 
-          echo "tag=$TAG" >> $GITHUB_OUTPUT
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "name=$NAME" >> $GITHUB_OUTPUT
-          echo "url=$URL" >> $GITHUB_OUTPUT
+          echo "Found release: $TAG (version: $VERSION)"
+
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "name=$NAME" >> "$GITHUB_OUTPUT"
+          echo "url=$URL" >> "$GITHUB_OUTPUT"
           
           # Clean body text (remove emojis and markdown)
-          CLEAN_BODY=$(echo "$BODY" | sed 's/[🚀✨📦📝📅💻🔗💬]//g' | sed 's/\*\*//g' | sed 's/`//g')
+          CLEAN_BODY=$(echo "$BODY" | sed 's/[🚀✨📦📝📅💻🔗💬]//g' | sed 's/\*\*//g' | sed 's/`//g' | sed 's/# //g')
           echo "$CLEAN_BODY" > body.txt
 
       - name: Create Post Message
@@ -50,55 +70,92 @@ jobs:
           VERSION="${{ steps.release.outputs.version }}"
           NAME="${{ steps.release.outputs.name }}"
           URL="${{ steps.release.outputs.url }}"
-          BODY=$(cat body.txt)
+          BODY=$(cat body.txt 2>/dev/null || echo "")
           
           # Truncate body if too long
           if [ ${#BODY} -gt 1000 ]; then
             BODY="${BODY:0:1000}..."
           fi
           
-          # Create message
-          MESSAGE="JsonViewer.Blazor ${TAG} Released!
-
-Version: ${VERSION}
-Name: ${NAME}
-
-${BODY}
-
-Links:
-• GitHub: ${URL}
-• NuGet: https://www.nuget.org/packages/JsonViewer.Blazor/${VERSION}
-
-Install:
-dotnet add package JsonViewer.Blazor --version ${VERSION}
-
-#JsonViewer #Blazor #DotNet #OpenSource #CSharp"
-
-          # Save to file
-          echo "$MESSAGE" > message.txt
+          # Create message using printf to avoid YAML parsing issues
+          {
+            printf 'JsonViewer.Blazor %s Released!\n\n' "$TAG"
+            printf 'Version: %s\n' "$VERSION"
+            printf 'Name: %s\n\n' "$NAME"
+            printf '%s\n\n' "$BODY"
+            printf 'Links:\n'
+            printf '• GitHub: %s\n' "$URL"
+            printf '• NuGet: https://www.nuget.org/packages/JsonViewer.Blazor/%s\n\n' "$VERSION"
+            printf 'Install:\n'
+            printf 'dotnet add package JsonViewer.Blazor --version %s\n\n' "$VERSION"
+            printf '#JsonViewer #Blazor #DotNet #OpenSource #CSharp\n'
+          } > message.txt
           
-          # URL encode for JSON
-          MESSAGE_ENCODED=$(jq -Rs . < message.txt)
-          echo "encoded=$MESSAGE_ENCODED" >> $GITHUB_OUTPUT
+          # Read message and encode for JSON
+          MESSAGE_CONTENT=$(cat message.txt)
+          MESSAGE_ENCODED=$(echo "$MESSAGE_CONTENT" | jq -Rs .)
+          echo "encoded=$MESSAGE_ENCODED" >> "$GITHUB_OUTPUT"
+          
+          echo "Message prepared successfully!"
+          echo "Message length: $(wc -c < message.txt) bytes"
 
       - name: Send to Make.com
+        env:
+          MAKE_WEBHOOK_URL: ${{ secrets.MAKE_WEBHOOK_URL }}
         run: |
-          curl -X POST "${{ secrets.MAKE_WEBHOOK_URL }}" \
+          if [ -z "$MAKE_WEBHOOK_URL" ]; then
+            echo "Make.com webhook URL not configured!"
+            echo "Please set MAKE_WEBHOOK_URL secret."
+            exit 1
+          fi
+
+          TAG="${{ steps.release.outputs.tag }}"
+          URL="${{ steps.release.outputs.url }}"
+          MESSAGE_ENCODED="${{ steps.message.outputs.encoded }}"
+
+          echo "Sending to Make.com webhook..."
+
+          RESPONSE=$(curl -s -w "\n%{http_code}" -X POST "$MAKE_WEBHOOK_URL" \
             -H "Content-Type: application/json" \
-            -d '{
-              "message": ${{ steps.message.outputs.encoded }},
-              "version": "${{ steps.release.outputs.tag }}",
-              "url": "${{ steps.release.outputs.url }}"
-            }'
+            -d "$(jq -n \
+              --argjson message "$MESSAGE_ENCODED" \
+              --arg version "$TAG" \
+              --arg url "$URL" \
+              '{message: $message, version: $version, url: $url}')")
+
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+          RESP_BODY=$(echo "$RESPONSE" | sed '$d')
+
+          if [ "$HTTP_CODE" -eq 200 ] || [ "$HTTP_CODE" -eq 201 ] || [ "$HTTP_CODE" -eq 202 ]; then
+            echo "✅ Message sent successfully to Make.com!"
+            echo "HTTP Code: $HTTP_CODE"
+            if [ -n "$RESP_BODY" ]; then
+              echo "Response: $RESP_BODY"
+            fi
+          else
+            echo "❌ Failed to send message!"
+            echo "HTTP Code: $HTTP_CODE"
+            echo "Response: $RESP_BODY"
+            exit 1
+          fi
 
       - name: Summary
+        if: always()
         run: |
-          echo "## LinkedIn Notification Sent" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Version:** ${{ steps.release.outputs.tag }}" >> $GITHUB_STEP_SUMMARY
-          echo "**Name:** ${{ steps.release.outputs.name }}" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### Message Preview:" >> $GITHUB_STEP_SUMMARY
-          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
-          cat message.txt >> $GITHUB_STEP_SUMMARY
-          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          echo "## LinkedIn Notification Summary" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "### Release Info" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Property | Value |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|----------|-------|" >> "$GITHUB_STEP_SUMMARY"
+          echo "| **Tag** | ${{ steps.release.outputs.tag }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| **Version** | ${{ steps.release.outputs.version }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| **Name** | ${{ steps.release.outputs.name }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "### Links" >> "$GITHUB_STEP_SUMMARY"
+          echo "- [GitHub Release](${{ steps.release.outputs.url }})" >> "$GITHUB_STEP_SUMMARY"
+          echo "- [NuGet Package](https://www.nuget.org/packages/JsonViewer.Blazor/${{ steps.release.outputs.version }})" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "### Message Preview:" >> "$GITHUB_STEP_SUMMARY"
+          echo "\`\`\`" >> "$GITHUB_STEP_SUMMARY"
+          cat message.txt >> "$GITHUB_STEP_SUMMARY"
+          echo "\`\`\`" >> "$GITHUB_STEP_SUMMARY"
