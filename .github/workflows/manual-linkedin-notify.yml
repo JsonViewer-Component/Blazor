@@ -70,6 +70,11 @@ jobs:
           VERSION="${{ steps.release.outputs.version }}"
           NAME="${{ steps.release.outputs.name }}"
           URL="${{ steps.release.outputs.url }}"
+          
+          # Get current date and time for uniqueness
+          TIMESTAMP=$(date -u +"%Y-%m-%d %H:%M UTC")
+          DATE_ONLY=$(date -u +"%B %d, %Y")
+          TIME_ONLY=$(date -u +"%H:%M UTC")
 
           # Read original release body (with emojis and markdown)
           RELEASE_BODY=$(cat release_body.txt 2>/dev/null || echo "")
@@ -83,12 +88,14 @@ jobs:
             sed 's/^---$//g')
 
           # Truncate if too long (LinkedIn limit: 3000 chars, but we keep some margin)
+          # Reserve space for timestamp at the end
           BODY_LENGTH=${#CLEANED_BODY}
-          if [ $BODY_LENGTH -gt 2500 ]; then
-            CLEANED_BODY="${CLEANED_BODY:0:2500}...\n\n📖 See full release notes on GitHub."
+          if [ $BODY_LENGTH -gt 2400 ]; then
+            CLEANED_BODY="${CLEANED_BODY:0:2400}...\n\n📖 See full release notes on GitHub."
           fi
 
           # Create LinkedIn post with header and release body
+          # Add timestamp at the end to make each post unique
           {
             printf '🚀 JsonViewer.Blazor %s Released!\n\n' "$TAG"
             printf '%s\n\n' "$CLEANED_BODY"
@@ -100,6 +107,7 @@ jobs:
             printf '🔗 Links:\n'
             printf '• 📚 GitHub: %s\n' "$URL"
             printf '• 📦 NuGet: https://www.nuget.org/packages/JsonViewer.Blazor/%s\n\n' "$VERSION"
+            printf '📅 Posted: %s\n\n' "$TIMESTAMP"
             printf '#JsonViewer #Blazor #DotNet #OpenSource #CSharp #WebDevelopment'
           } > message.txt
 
@@ -107,10 +115,12 @@ jobs:
           MESSAGE_CONTENT=$(cat message.txt)
           MESSAGE_ENCODED=$(echo "$MESSAGE_CONTENT" | jq -Rs .)
           echo "encoded=$MESSAGE_ENCODED" >> "$GITHUB_OUTPUT"
+          echo "timestamp=$TIMESTAMP" >> "$GITHUB_OUTPUT"
 
           echo "Message prepared successfully!"
           echo "Message length: $(wc -c < message.txt) bytes"
           echo "Body length: $BODY_LENGTH characters"
+          echo "Timestamp: $TIMESTAMP"
 
       - name: Send to Make.com
         env:
@@ -127,7 +137,7 @@ jobs:
           WORKFLOW_RUN_ID="${{ github.run_id }}"
           WORKFLOW_RUN_NUMBER="${{ github.run_number }}"
           TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-          
+
           # Create a unique hash of the message content for duplicate detection
           MESSAGE_HASH=$(cat message.txt | sha256sum | cut -d' ' -f1 | cut -c1-16)
 
