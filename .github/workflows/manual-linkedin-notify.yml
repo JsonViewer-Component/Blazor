@@ -70,7 +70,7 @@ jobs:
           VERSION="${{ steps.release.outputs.version }}"
           NAME="${{ steps.release.outputs.name }}"
           URL="${{ steps.release.outputs.url }}"
-          
+
           # Get current date and time for uniqueness
           TIMESTAMP=$(date -u +"%Y-%m-%d %H:%M UTC")
           DATE_ONLY=$(date -u +"%B %d, %Y")
