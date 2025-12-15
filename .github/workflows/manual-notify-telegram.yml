@@ -1,4 +1,4 @@
-name: Manual Telegram Notification
+name: 📱 Manual Telegram Notification
 
 on:
   workflow_dispatch:

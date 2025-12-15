@@ -1,4 +1,4 @@
-name: Manual LinkedIn Notification
+name: 💼 Manual LinkedIn Notification
 
 on:
   workflow_dispatch:
