@@ -111,7 +111,7 @@ jobs:
 
           TAG="${{ steps.release.outputs.tag }}"
           URL="${{ steps.release.outputs.url }}"
-          
+
           # Read message from file and encode it properly
           MESSAGE_CONTENT=$(cat message.txt)
           MESSAGE_ENCODED=$(echo "$MESSAGE_CONTENT" | jq -Rs .)
