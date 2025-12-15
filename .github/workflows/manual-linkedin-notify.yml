@@ -1,0 +1,208 @@
+name: Manual LinkedIn Notification
+
+on:
+  workflow_dispatch:
+    inputs:
+      include_prerelease:
+        description: 'Include pre-release versions?'
+        required: false
+        type: boolean
+        default: true
+      custom_message:
+        description: 'Add custom message (optional)'
+        required: false
+        type: string
+
+env:
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+  DOTNET_NOLOGO: true
+
+jobs:
+  send-notification:
+    name: Send Manual LinkedIn Notification
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fetch Latest Release
+        id: latest_release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "Fetching latest release..."
+
+          if [ "${{ inputs.include_prerelease }}" == "true" ]; then
+            echo "Including pre-release versions..."
+            RELEASE_DATA=$(gh api repos/${{ github.repository }}/releases --jq '.[0]')
+          else
+            echo "Stable releases only..."
+            RELEASE_DATA=$(gh api repos/${{ github.repository }}/releases --jq '[.[] | select(.prerelease == false)][0]')
+          fi
+
+          if [ -z "$RELEASE_DATA" ] || [ "$RELEASE_DATA" == "null" ]; then
+            echo "No release found!"
+            exit 1
+          fi
+
+          TAG_NAME=$(echo "$RELEASE_DATA" | jq -r '.tag_name // empty')
+          NAME=$(echo "$RELEASE_DATA" | jq -r '.name // empty')
+          BODY=$(echo "$RELEASE_DATA" | jq -r '.body // empty')
+          URL=$(echo "$RELEASE_DATA" | jq -r '.html_url // empty')
+          IS_PRERELEASE=$(echo "$RELEASE_DATA" | jq -r '.prerelease // false')
+          PUBLISHED_AT=$(echo "$RELEASE_DATA" | jq -r '.published_at // empty')
+
+          VERSION="${TAG_NAME#v}"
+
+          echo "Found release: $TAG_NAME (version: $VERSION)"
+
+          echo "tag_name=$TAG_NAME" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "name=$NAME" >> "$GITHUB_OUTPUT"
+          echo "url=$URL" >> "$GITHUB_OUTPUT"
+          echo "is_prerelease=$IS_PRERELEASE" >> "$GITHUB_OUTPUT"
+          echo "published_at=$PUBLISHED_AT" >> "$GITHUB_OUTPUT"
+
+          echo "$BODY" > release_body.txt
+          echo "Release body saved to file"
+
+      - name: Prepare LinkedIn Post
+        id: prepare_post
+        run: |
+          TAG_NAME="${{ steps.latest_release.outputs.tag_name }}"
+          VERSION="${{ steps.latest_release.outputs.version }}"
+          NAME="${{ steps.latest_release.outputs.name }}"
+          URL="${{ steps.latest_release.outputs.url }}"
+          IS_PRERELEASE="${{ steps.latest_release.outputs.is_prerelease }}"
+          PUBLISHED_AT="${{ steps.latest_release.outputs.published_at }}"
+          CUSTOM_MSG="${{ inputs.custom_message }}"
+
+          BODY=$(cat release_body.txt 2>/dev/null || echo "")
+
+          BODY_TEXT=$(echo "$BODY" | sed 's/^### \(.*\)$/\1/g' | sed 's/^## \(.*\)$/\1/g' | sed 's/^# \(.*\)$/\1/g' | sed 's/\*\*\([^*]*\)\*\*/\1/g' | sed 's/`\([^`]*\)`/\1/g' | sed 's/\[\([^\]]*\)\]([^)]*)/\1/g' | sed 's/[🚀✨📦📝📅💻🔗💬]//g')
+
+          if [ ${#BODY_TEXT} -gt 1500 ]; then
+            BODY_TEXT="${BODY_TEXT:0:1500}...\n\nSee full release notes on GitHub."
+          fi
+
+          if [ "$IS_PRERELEASE" == "true" ]; then
+            RELEASE_TYPE="Pre-release"
+          else
+            RELEASE_TYPE="Stable Release"
+          fi
+
+          if [ -n "$PUBLISHED_AT" ]; then
+            FORMATTED_DATE=$(date -d "$PUBLISHED_AT" "+%Y-%m-%d %H:%M UTC" 2>/dev/null || echo "$PUBLISHED_AT")
+          else
+            FORMATTED_DATE="N/A"
+          fi
+
+          cat > linkedin_post.txt << EOF
+JsonViewer.Blazor ${TAG_NAME} Released!
+
+${RELEASE_TYPE}
+
+Version: ${VERSION}
+Name: ${NAME}
+Published: ${FORMATTED_DATE}
+
+Release Notes:
+${BODY_TEXT}
+
+Links:
+• GitHub: ${URL}
+• NuGet: https://www.nuget.org/packages/JsonViewer.Blazor/${VERSION}
+
+Install:
+dotnet add package JsonViewer.Blazor --version ${VERSION}
+EOF
+
+          if [ -n "$CUSTOM_MSG" ]; then
+            echo "" >> linkedin_post.txt
+            echo "${CUSTOM_MSG}" >> linkedin_post.txt
+          fi
+
+          echo "" >> linkedin_post.txt
+          echo "#JsonViewer #Blazor #DotNet #OpenSource #CSharp #WebDevelopment" >> linkedin_post.txt
+
+          echo "Post prepared successfully!"
+          echo "Post length: $(wc -c < linkedin_post.txt) bytes"
+
+      - name: Send to LinkedIn via Make.com
+        env:
+          MAKE_WEBHOOK_URL: ${{ secrets.MAKE_WEBHOOK_URL }}
+        run: |
+          if [ -z "$MAKE_WEBHOOK_URL" ]; then
+            echo "Make.com Webhook URL not configured!"
+            echo "Please set MAKE_WEBHOOK_URL secret."
+            exit 1
+          fi
+
+          POST_TEXT=$(cat linkedin_post.txt)
+          TAG_NAME="${{ steps.latest_release.outputs.tag_name }}"
+          URL="${{ steps.latest_release.outputs.url }}"
+
+          echo "Sending post to LinkedIn via Make.com..."
+
+          RESPONSE=$(curl -s -w "\n%{http_code}" -X POST "$MAKE_WEBHOOK_URL" \
+            -H "Content-Type: application/json" \
+            -d "$(jq -n \
+              --arg message "$POST_TEXT" \
+              --arg version "$TAG_NAME" \
+              --arg url "$URL" \
+              '{
+                message: $message,
+                version: $version,
+                url: $url
+              }')")
+
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+          RESP_BODY=$(echo "$RESPONSE" | sed '$d')
+
+          if [ "$HTTP_CODE" -eq 200 ] || [ "$HTTP_CODE" -eq 202 ]; then
+            echo "Post sent successfully to Make.com!"
+            echo "Response: $RESP_BODY"
+          else
+            echo "Failed to send post!"
+            echo "HTTP Code: $HTTP_CODE"
+            echo "Response: $RESP_BODY"
+            exit 1
+          fi
+
+      - name: Summary
+        if: always()
+        run: |
+          cat >> $GITHUB_STEP_SUMMARY << 'SUMMARY_EOF'
+## LinkedIn Notification Summary
+
+### Release Info
+| Property | Value |
+|----------|-------|
+SUMMARY_EOF
+          echo "| **Tag** | ${{ steps.latest_release.outputs.tag_name }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Version** | ${{ steps.latest_release.outputs.version }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Name** | ${{ steps.latest_release.outputs.name }} |" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ steps.latest_release.outputs.is_prerelease }}" == "true" ]; then
+            echo "| **Type** | Pre-release |" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "| **Type** | Stable |" >> $GITHUB_STEP_SUMMARY
+          fi
+          cat >> $GITHUB_STEP_SUMMARY << 'SUMMARY_EOF'
+
+### Links
+SUMMARY_EOF
+          echo "- [GitHub Release](${{ steps.latest_release.outputs.url }})" >> $GITHUB_STEP_SUMMARY
+          echo "- [NuGet Package](https://www.nuget.org/packages/JsonViewer.Blazor/${{ steps.latest_release.outputs.version }})" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Post Content" >> $GITHUB_STEP_SUMMARY
+          echo '
+```' >> $GITHUB_STEP_SUMMARY
+cat linkedin_post.txt >> $GITHUB_STEP_SUMMARY
+echo '
+```' >> $GITHUB_STEP_SUMMARY
