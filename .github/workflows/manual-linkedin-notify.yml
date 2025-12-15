@@ -111,17 +111,23 @@ jobs:
 
           TAG="${{ steps.release.outputs.tag }}"
           URL="${{ steps.release.outputs.url }}"
-          MESSAGE_ENCODED="${{ steps.message.outputs.encoded }}"
+          
+          # Read message from file and encode it properly
+          MESSAGE_CONTENT=$(cat message.txt)
+          MESSAGE_ENCODED=$(echo "$MESSAGE_CONTENT" | jq -Rs .)
 
           echo "Sending to Make.com webhook..."
 
+          # Build JSON payload using jq to handle special characters properly
+          JSON_PAYLOAD=$(jq -n \
+            --argjson message "$MESSAGE_ENCODED" \
+            --arg version "$TAG" \
+            --arg url "$URL" \
+            '{message: $message, version: $version, url: $url}')
+
           RESPONSE=$(curl -s -w "\n%{http_code}" -X POST "$MAKE_WEBHOOK_URL" \
             -H "Content-Type: application/json" \
-            -d "$(jq -n \
-              --argjson message "$MESSAGE_ENCODED" \
-              --arg version "$TAG" \
-              --arg url "$URL" \
-              '{message: $message, version: $version, url: $url}')")
+            -d "$JSON_PAYLOAD")
 
           HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
           RESP_BODY=$(echo "$RESPONSE" | sed '$d')
