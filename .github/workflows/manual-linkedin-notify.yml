@@ -85,7 +85,6 @@ jobs:
 
           BODY=$(cat release_body.txt 2>/dev/null || echo "")
 
-          # Clean markdown for LinkedIn (remove emojis and markdown syntax)
           BODY_TEXT=$(echo "$BODY" | \
             sed 's/^### \(.*\)$/\1/g' | \
             sed 's/^## \(.*\)$/\1/g' | \
@@ -95,7 +94,6 @@ jobs:
             sed 's/\[\([^\]]*\)\]([^)]*)/\1/g' | \
             sed 's/[🚀✨📦📝📅💻🔗💬]//g')
 
-          # Truncate if too long (LinkedIn limit: 3000 chars)
           if [ ${#BODY_TEXT} -gt 1500 ]; then
             BODY_TEXT="${BODY_TEXT:0:1500}...\n\nSee full release notes on GitHub."
           fi
@@ -112,8 +110,7 @@ jobs:
             FORMATTED_DATE="N/A"
           fi
 
-          # Build LinkedIn post text (NO EMOJIS!)
-          cat > linkedin_post.txt << MSGEOF
+          cat > linkedin_post.txt << 'MSGEOF'
 JsonViewer.Blazor ${TAG_NAME} Released!
 
 ${RELEASE_TYPE}
@@ -133,6 +130,14 @@ Install:
 dotnet add package JsonViewer.Blazor --version ${VERSION}
 MSGEOF
 
+          sed -i "s|\${TAG_NAME}|${TAG_NAME}|g" linkedin_post.txt
+          sed -i "s|\${RELEASE_TYPE}|${RELEASE_TYPE}|g" linkedin_post.txt
+          sed -i "s|\${VERSION}|${VERSION}|g" linkedin_post.txt
+          sed -i "s|\${NAME}|${NAME}|g" linkedin_post.txt
+          sed -i "s|\${FORMATTED_DATE}|${FORMATTED_DATE}|g" linkedin_post.txt
+          sed -i "s|\${BODY_TEXT}|${BODY_TEXT}|g" linkedin_post.txt
+          sed -i "s|\${URL}|${URL}|g" linkedin_post.txt
+
           if [ -n "$CUSTOM_MSG" ]; then
             echo "" >> linkedin_post.txt
             echo "${CUSTOM_MSG}" >> linkedin_post.txt
@@ -143,13 +148,6 @@ MSGEOF
 
           echo "Post prepared successfully!"
           echo "Post length: $(wc -c < linkedin_post.txt) bytes"
-
-          # Save to output for next step
-          {
-            echo 'post_content<<EOF'
-            cat linkedin_post.txt
-            echo EOF
-          } >> "$GITHUB_OUTPUT"
 
       - name: Send to LinkedIn via Make.com
         env:
@@ -195,27 +193,27 @@ MSGEOF
       - name: Summary
         if: always()
         run: |
-          echo "## LinkedIn Notification Summary" >> "$GITHUB_STEP_SUMMARY"
-          echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "### Release Info" >> "$GITHUB_STEP_SUMMARY"
-          echo "| Property | Value |" >> "$GITHUB_STEP_SUMMARY"
-          echo "|----------|-------|" >> "$GITHUB_STEP_SUMMARY"
-          echo "| **Tag** | ${{ steps.latest_release.outputs.tag_name }} |" >> "$GITHUB_STEP_SUMMARY"
-          echo "| **Version** | ${{ steps.latest_release.outputs.version }} |" >> "$GITHUB_STEP_SUMMARY"
-          echo "| **Name** | ${{ steps.latest_release.outputs.name }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "## LinkedIn Notification Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Release Info" >> $GITHUB_STEP_SUMMARY
+          echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| **Tag** | ${{ steps.latest_release.outputs.tag_name }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Version** | ${{ steps.latest_release.outputs.version }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Name** | ${{ steps.latest_release.outputs.name }} |" >> $GITHUB_STEP_SUMMARY
           if [ "${{ steps.latest_release.outputs.is_prerelease }}" == "true" ]; then
-            echo "| **Type** | Pre-release |" >> "$GITHUB_STEP_SUMMARY"
+            echo "| **Type** | Pre-release |" >> $GITHUB_STEP_SUMMARY
           else
-            echo "| **Type** | Stable |" >> "$GITHUB_STEP_SUMMARY"
+            echo "| **Type** | Stable |" >> $GITHUB_STEP_SUMMARY
           fi
-          echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "### Links" >> "$GITHUB_STEP_SUMMARY"
-          echo "- [GitHub Release](${{ steps.latest_release.outputs.url }})" >> "$GITHUB_STEP_SUMMARY"
-          echo "- [NuGet Package](https://www.nuget.org/packages/JsonViewer.Blazor/${{ steps.latest_release.outputs.version }})" >> "$GITHUB_STEP_SUMMARY"
-          echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "### Post Content" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Links" >> $GITHUB_STEP_SUMMARY
+          echo "- [GitHub Release](${{ steps.latest_release.outputs.url }})" >> $GITHUB_STEP_SUMMARY
+          echo "- [NuGet Package](https://www.nuget.org/packages/JsonViewer.Blazor/${{ steps.latest_release.outputs.version }})" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Post Content" >> $GITHUB_STEP_SUMMARY
           echo '
-```' >> "$GITHUB_STEP_SUMMARY"
-cat linkedin_post.txt >> "$GITHUB_STEP_SUMMARY"
+```' >> $GITHUB_STEP_SUMMARY
+cat linkedin_post.txt >> $GITHUB_STEP_SUMMARY
 echo '
-```' >> "$GITHUB_STEP_SUMMARY"
+```' >> $GITHUB_STEP_SUMMARY
