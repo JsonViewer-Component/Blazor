@@ -118,9 +118,236 @@ jobs:
         retention-days: 90
 
     # ═══════════════════════════════════════════════════════════
+    # 5️⃣ Get Release Info for Notifications
+    # ═══════════════════════════════════════════════════════════
+    - name: 📋 Get Release Info
+      id: release_info
+      if: github.event_name == 'release'
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        echo "Fetching release info for notifications..."
+
+        RELEASE_DATA=$(gh api repos/${{ github.repository }}/releases/tags/${{ github.event.release.tag_name }})
+
+        if [ -z "$RELEASE_DATA" ] || [ "$RELEASE_DATA" == "null" ]; then
+          echo "No release found!"
+          exit 1
+        fi
+
+        TAG_NAME=$(echo "$RELEASE_DATA" | jq -r '.tag_name // empty')
+        NAME=$(echo "$RELEASE_DATA" | jq -r '.name // empty')
+        BODY=$(echo "$RELEASE_DATA" | jq -r '.body // empty')
+        URL=$(echo "$RELEASE_DATA" | jq -r '.html_url // empty')
+        IS_PRERELEASE=$(echo "$RELEASE_DATA" | jq -r '.prerelease // false')
+        PUBLISHED_AT=$(echo "$RELEASE_DATA" | jq -r '.published_at // empty')
+
+        VERSION="${TAG_NAME#v}"
+
+        echo "Found release: $TAG_NAME (version: $VERSION)"
+
+        echo "tag_name=$TAG_NAME" >> "$GITHUB_OUTPUT"
+        echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+        echo "name=$NAME" >> "$GITHUB_OUTPUT"
+        echo "url=$URL" >> "$GITHUB_OUTPUT"
+        echo "is_prerelease=$IS_PRERELEASE" >> "$GITHUB_OUTPUT"
+        echo "published_at=$PUBLISHED_AT" >> "$GITHUB_OUTPUT"
+
+        # Save release body for notifications
+        printf '%s' "$BODY" > release_body.txt
+        echo "Release body saved for notifications"
+
+    # ═══════════════════════════════════════════════════════════
+    # 6️⃣ Send Telegram Notification
+    # ═══════════════════════════════════════════════════════════
+    - name: 📱 Send Telegram Notification
+      if: github.event_name == 'release' && success()
+      env:
+        TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+        TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+      run: |
+        if [ -z "$TELEGRAM_BOT_TOKEN" ] || [ -z "$TELEGRAM_CHAT_ID" ]; then
+          echo "⚠️ Telegram credentials not configured. Skipping Telegram notification."
+          exit 0
+        fi
+
+        TAG_NAME="${{ steps.release_info.outputs.tag_name }}"
+        VERSION="${{ steps.release_info.outputs.version }}"
+        NAME="${{ steps.release_info.outputs.name }}"
+        URL="${{ steps.release_info.outputs.url }}"
+        IS_PRERELEASE="${{ steps.release_info.outputs.is_prerelease }}"
+        PUBLISHED_AT="${{ steps.release_info.outputs.published_at }}"
+
+        BODY=$(cat release_body.txt 2>/dev/null || echo "")
+
+        # Escape HTML special chars
+        BODY_HTML=$(echo "$BODY" | sed 's/&/\&amp;/g; s/</\&lt;/g; s/>/\&gt;/g')
+
+        # Convert markdown to HTML
+        BODY_HTML=$(echo "$BODY_HTML" | \
+          sed 's/^### \(.*\)$/<b>\1<\/b>/g' | \
+          sed 's/^## \(.*\)$/<b>\1<\/b>/g' | \
+          sed 's/^# \(.*\)$/<b>\1<\/b>/g' | \
+          sed 's/\*\*\([^*]*\)\*\*/<b>\1<\/b>/g' | \
+          sed 's/`\([^`]*\)`/<code>\1<\/code>/g')
+
+        # Truncate if too long
+        if [ ${#BODY_HTML} -gt 1800 ]; then
+          BODY_HTML="${BODY_HTML:0:1800}... (truncated)"
+        fi
+
+        if [ "$IS_PRERELEASE" == "true" ]; then
+          RELEASE_TYPE="⚠️ Pre-release"
+        else
+          RELEASE_TYPE="✅ Stable Release"
+        fi
+
+        if [ -n "$PUBLISHED_AT" ]; then
+          FORMATTED_DATE=$(date -d "$PUBLISHED_AT" "+%Y-%m-%d %H:%M UTC" 2>/dev/null || echo "$PUBLISHED_AT")
+        else
+          FORMATTED_DATE="N/A"
+        fi
+
+        # Build Telegram message
+        cat > telegram_message.txt << MSGEOF
+📢 JsonViewer.Blazor - New Release Published!
+
+${RELEASE_TYPE}
+
+📦 Version: ${TAG_NAME}
+📝 Name: ${NAME}
+📅 Published: ${FORMATTED_DATE}
+
+━━━━━━━━━━━━━━━━━━━━
+
+📋 Release Notes:
+${BODY_HTML}
+
+━━━━━━━━━━━━━━━━━━━━
+
+🔗 Links:
+• <a href="${URL}">View on GitHub</a>
+• <a href="https://www.nuget.org/packages/JsonViewer.Blazor/${VERSION}">View on NuGet</a>
+
+⚡ Install via:
+<code>dotnet add package JsonViewer.Blazor --version ${VERSION}</code>
+
+#JsonViewer #Blazor #DotNet #OpenSource
+MSGEOF
+
+        MESSAGE=$(cat telegram_message.txt)
+
+        echo "Sending message to Telegram..."
+
+        RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
+          "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+          -H "Content-Type: application/json" \
+          -d "$(jq -n \
+            --arg chat_id "$TELEGRAM_CHAT_ID" \
+            --arg text "$MESSAGE" \
+            '{chat_id: $chat_id, text: $text, parse_mode: "HTML", disable_web_page_preview: false}')")
+
+        HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+        RESP_BODY=$(echo "$RESPONSE" | sed '$d')
+
+        if [ "$HTTP_CODE" -eq 200 ] && echo "$RESP_BODY" | jq -e '.ok == true' > /dev/null 2>&1; then
+          echo "✅ Telegram notification sent successfully!"
+          MESSAGE_ID=$(echo "$RESP_BODY" | jq -r '.result.message_id')
+          echo "📨 Message ID: $MESSAGE_ID"
+        else
+          echo "⚠️ Failed to send Telegram notification!"
+          echo "HTTP Code: $HTTP_CODE"
+          echo "Response: $RESP_BODY"
+          # Don't fail the workflow if notification fails
+          exit 0
+        fi
+
+    # ═══════════════════════════════════════════════════════════
+    # 7️⃣ Send LinkedIn Notification
+    # ═══════════════════════════════════════════════════════════
+    - name: 💼 Send LinkedIn Notification
+      if: github.event_name == 'release' && success()
+      env:
+        MAKE_WEBHOOK_URL: ${{ secrets.MAKE_WEBHOOK_URL }}
+      run: |
+        if [ -z "$MAKE_WEBHOOK_URL" ]; then
+          echo "⚠️ Make.com webhook URL not configured. Skipping LinkedIn notification."
+          exit 0
+        fi
+
+        TAG_NAME="${{ steps.release_info.outputs.tag_name }}"
+        VERSION="${{ steps.release_info.outputs.version }}"
+        NAME="${{ steps.release_info.outputs.name }}"
+        URL="${{ steps.release_info.outputs.url }}"
+
+        # Read original release body (with emojis and markdown)
+        RELEASE_BODY=$(cat release_body.txt 2>/dev/null || echo "")
+
+        # Clean markdown for LinkedIn
+        CLEANED_BODY=$(echo "$RELEASE_BODY" | \
+          sed 's/<!--.*-->//g' | \
+          sed '/^```/,/^```/d' | \
+          sed 's/^---$//g')
+
+        # Truncate if too long
+        BODY_LENGTH=${#CLEANED_BODY}
+        if [ $BODY_LENGTH -gt 2400 ]; then
+          CLEANED_BODY="${CLEANED_BODY:0:2400}...\n\n📖 See full release notes on GitHub."
+        fi
+
+        # Get current timestamp for uniqueness
+        TIMESTAMP=$(date -u +"%Y-%m-%d %H:%M UTC")
+
+        # Create LinkedIn post
+        {
+          printf '🚀 JsonViewer.Blazor %s Released!\n\n' "$TAG_NAME"
+          printf '%s\n\n' "$CLEANED_BODY"
+          printf '━━━━━━━━━━━━━━━━━━━━\n\n'
+          printf '📦 Install:\n'
+          printf '```\n'
+          printf 'dotnet add package JsonViewer.Blazor --version %s\n' "$VERSION"
+          printf '```\n\n'
+          printf '🔗 Links:\n'
+          printf '• 📚 GitHub: %s\n' "$URL"
+          printf '• 📦 NuGet: https://www.nuget.org/packages/JsonViewer.Blazor/%s\n\n' "$VERSION"
+          printf '📅 Posted: %s\n\n' "$TIMESTAMP"
+          printf '#JsonViewer #Blazor #DotNet #OpenSource #CSharp #WebDevelopment'
+        } > linkedin_message.txt
+
+        MESSAGE_CONTENT=$(cat linkedin_message.txt)
+        MESSAGE_ENCODED=$(echo "$MESSAGE_CONTENT" | jq -Rs .)
+
+        echo "Sending to Make.com webhook..."
+
+        JSON_PAYLOAD=$(jq -n \
+          --argjson message "$MESSAGE_ENCODED" \
+          --arg version "$TAG_NAME" \
+          --arg url "$URL" \
+          '{message: $message, version: $version, url: $url}')
+
+        RESPONSE=$(curl -s -w "\n%{http_code}" -X POST "$MAKE_WEBHOOK_URL" \
+          -H "Content-Type: application/json" \
+          -d "$JSON_PAYLOAD")
+
+        HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+        RESP_BODY=$(echo "$RESPONSE" | sed '$d')
+
+        if [ "$HTTP_CODE" -eq 200 ] || [ "$HTTP_CODE" -eq 201 ] || [ "$HTTP_CODE" -eq 202 ]; then
+          echo "✅ LinkedIn notification sent successfully!"
+          echo "HTTP Code: $HTTP_CODE"
+        else
+          echo "⚠️ Failed to send LinkedIn notification!"
+          echo "HTTP Code: $HTTP_CODE"
+          echo "Response: $RESP_BODY"
+          # Don't fail the workflow if notification fails
+          exit 0
+        fi
+
+    # ═══════════════════════════════════════════════════════════
     # 📝 Summary
     # ═══════════════════════════════════════════════════════════
     - name: 📝 Create Summary
+      if: always()
       run: |
         echo "## 📦 Package Published Successfully!" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
@@ -141,3 +368,9 @@ jobs:
         echo "\`\`\`bash" >> $GITHUB_STEP_SUMMARY
         echo "dotnet add package JsonViewer.Blazor --version ${{ steps.version.outputs.VERSION }}" >> $GITHUB_STEP_SUMMARY
         echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        if [ "${{ github.event_name }}" == "release" ]; then
+          echo "### 📢 Notifications" >> $GITHUB_STEP_SUMMARY
+          echo "- 📱 Telegram: ${{ steps.release_info.outputs.tag_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "- 💼 LinkedIn: ${{ steps.release_info.outputs.tag_name }}" >> $GITHUB_STEP_SUMMARY
+        fi
