@@ -1,0 +1,104 @@
+name: Manual LinkedIn Notification
+
+on:
+  workflow_dispatch:
+    inputs:
+      include_prerelease:
+        description: 'Include pre-release versions?'
+        required: false
+        type: boolean
+        default: true
+
+jobs:
+  send-notification:
+    name: Send Manual LinkedIn Notification
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Fetch Latest Release
+        id: release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [ "${{ inputs.include_prerelease }}" == "true" ]; then
+            RELEASE=$(gh api repos/${{ github.repository }}/releases --jq '.[0]')
+          else
+            RELEASE=$(gh api repos/${{ github.repository }}/releases --jq '[.[] | select(.prerelease == false)][0]')
+          fi
+
+          TAG=$(echo "$RELEASE" | jq -r '.tag_name')
+          NAME=$(echo "$RELEASE" | jq -r '.name')
+          BODY=$(echo "$RELEASE" | jq -r '.body')
+          URL=$(echo "$RELEASE" | jq -r '.html_url')
+          VERSION="${TAG#v}"
+
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "name=$NAME" >> $GITHUB_OUTPUT
+          echo "url=$URL" >> $GITHUB_OUTPUT
+          
+          # Clean body text (remove emojis and markdown)
+          CLEAN_BODY=$(echo "$BODY" | sed 's/[🚀✨📦📝📅💻🔗💬]//g' | sed 's/\*\*//g' | sed 's/`//g')
+          echo "$CLEAN_BODY" > body.txt
+
+      - name: Create Post Message
+        id: message
+        run: |
+          TAG="${{ steps.release.outputs.tag }}"
+          VERSION="${{ steps.release.outputs.version }}"
+          NAME="${{ steps.release.outputs.name }}"
+          URL="${{ steps.release.outputs.url }}"
+          BODY=$(cat body.txt)
+          
+          # Truncate body if too long
+          if [ ${#BODY} -gt 1000 ]; then
+            BODY="${BODY:0:1000}..."
+          fi
+          
+          # Create message
+          MESSAGE="JsonViewer.Blazor ${TAG} Released!
+
+Version: ${VERSION}
+Name: ${NAME}
+
+${BODY}
+
+Links:
+• GitHub: ${URL}
+• NuGet: https://www.nuget.org/packages/JsonViewer.Blazor/${VERSION}
+
+Install:
+dotnet add package JsonViewer.Blazor --version ${VERSION}
+
+#JsonViewer #Blazor #DotNet #OpenSource #CSharp"
+
+          # Save to file
+          echo "$MESSAGE" > message.txt
+          
+          # URL encode for JSON
+          MESSAGE_ENCODED=$(jq -Rs . < message.txt)
+          echo "encoded=$MESSAGE_ENCODED" >> $GITHUB_OUTPUT
+
+      - name: Send to Make.com
+        run: |
+          curl -X POST "${{ secrets.MAKE_WEBHOOK_URL }}" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "message": ${{ steps.message.outputs.encoded }},
+              "version": "${{ steps.release.outputs.tag }}",
+              "url": "${{ steps.release.outputs.url }}"
+            }'
+
+      - name: Summary
+        run: |
+          echo "## LinkedIn Notification Sent" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Version:** ${{ steps.release.outputs.tag }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Name:** ${{ steps.release.outputs.name }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Message Preview:" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          cat message.txt >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
