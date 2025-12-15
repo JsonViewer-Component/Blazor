@@ -127,6 +127,9 @@ jobs:
           WORKFLOW_RUN_ID="${{ github.run_id }}"
           WORKFLOW_RUN_NUMBER="${{ github.run_number }}"
           TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          
+          # Create a unique hash of the message content for duplicate detection
+          MESSAGE_HASH=$(cat message.txt | sha256sum | cut -d' ' -f1 | cut -c1-16)
 
           # Read message from file and encode it properly
           MESSAGE_CONTENT=$(cat message.txt)
@@ -136,9 +139,13 @@ jobs:
           echo "Release: $TAG"
           echo "Workflow Run: #$WORKFLOW_RUN_NUMBER (ID: $WORKFLOW_RUN_ID)"
           echo "Timestamp: $TIMESTAMP"
+          echo "Message Hash: $MESSAGE_HASH"
+          echo ""
+          echo "ℹ️ Note: LinkedIn may reject duplicate posts with identical content."
+          echo "ℹ️ If this is a duplicate, Make.com should handle it gracefully."
 
-          # Build JSON payload with duplicate detection info
-          # Make.com can use these fields to detect duplicates
+          # Build JSON payload with comprehensive duplicate detection info
+          # Make.com can use release_tag as unique identifier to prevent duplicates
           JSON_PAYLOAD=$(jq -n \
             --argjson message "$MESSAGE_ENCODED" \
             --arg version "$TAG" \
@@ -147,6 +154,7 @@ jobs:
             --arg run_number "$WORKFLOW_RUN_NUMBER" \
             --arg timestamp "$TIMESTAMP" \
             --arg release_tag "$TAG" \
+            --arg message_hash "$MESSAGE_HASH" \
             '{
               message: $message,
               version: $version,
@@ -156,7 +164,9 @@ jobs:
                 workflow_run_number: $run_number,
                 timestamp: $timestamp,
                 release_tag: $release_tag,
-                duplicate_check_key: ($release_tag + "_" + $timestamp)
+                message_hash: $message_hash,
+                duplicate_check_key: $release_tag,
+                is_duplicate_check: true
               }
             }')
 
@@ -176,16 +186,24 @@ jobs:
           else
             echo "⚠️ HTTP Code: $HTTP_CODE"
             echo "Response: $RESP_BODY"
-            
+            echo ""
+
             # Check if it's a duplicate/rate limit error
-            if echo "$RESP_BODY" | grep -qi "duplicate\|rate.limit\|already.posted\|rejected"; then
+            if echo "$RESP_BODY" | grep -qiE "duplicate|rate.limit|already.posted|rejected|spam|identical"; then
               echo "ℹ️ This appears to be a duplicate post or rate limit issue."
-              echo "ℹ️ LinkedIn may reject duplicate content or have rate limits."
+              echo "ℹ️ LinkedIn typically rejects duplicate content to prevent spam."
               echo "ℹ️ This is expected behavior - only the first post will be published."
-              # Don't fail the workflow for duplicates
+              echo "ℹ️ Workflow will succeed to avoid false failures."
+              # Don't fail the workflow for duplicates - this is expected
+              exit 0
+            elif [ "$HTTP_CODE" -eq 429 ]; then
+              echo "⚠️ Rate limit exceeded (429)."
+              echo "ℹ️ LinkedIn has rate limits. Please wait before retrying."
+              echo "ℹ️ Workflow will succeed to avoid false failures."
               exit 0
             else
-              echo "❌ Failed to send message!"
+              echo "❌ Failed to send message with unexpected error!"
+              echo "❌ Please check Make.com webhook configuration."
               exit 1
             fi
           fi
@@ -205,6 +223,17 @@ jobs:
           echo "### Links" >> "$GITHUB_STEP_SUMMARY"
           echo "- [GitHub Release](${{ steps.release.outputs.url }})" >> "$GITHUB_STEP_SUMMARY"
           echo "- [NuGet Package](https://www.nuget.org/packages/JsonViewer.Blazor/${{ steps.release.outputs.version }})" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "### 📝 Note About Duplicates" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "LinkedIn rejects duplicate posts to prevent spam. If you run this workflow multiple times for the same release:" >> "$GITHUB_STEP_SUMMARY"
+          echo "- ✅ First run: Will post successfully" >> "$GITHUB_STEP_SUMMARY"
+          echo "- ⚠️ Subsequent runs: May be rejected (this is expected)" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "**To prevent duplicates in Make.com:**" >> "$GITHUB_STEP_SUMMARY"
+          echo "1. Use \`metadata.release_tag\` as unique identifier" >> "$GITHUB_STEP_SUMMARY"
+          echo "2. Check if post already exists before posting to LinkedIn" >> "$GITHUB_STEP_SUMMARY"
+          echo "3. Use Make.com's 'Filter' or 'Router' module to skip duplicates" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
           echo "### Message Preview:" >> "$GITHUB_STEP_SUMMARY"
           echo "\`\`\`" >> "$GITHUB_STEP_SUMMARY"
