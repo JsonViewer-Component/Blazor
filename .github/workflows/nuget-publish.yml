@@ -369,8 +369,8 @@ MSGEOF
         echo "dotnet add package JsonViewer.Blazor --version ${{ steps.version.outputs.VERSION }}" >> $GITHUB_STEP_SUMMARY
         echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
-        if [ "${{ github.event_name }}" == "release" ]; then
+        if [ "${{ github.event_name }}" == "release" ] && [ -n "${{ steps.release_info.outputs.tag_name }}" ]; then
           echo "### 📢 Notifications" >> $GITHUB_STEP_SUMMARY
-          echo "- 📱 Telegram: ${{ steps.release_info.outputs.tag_name }}" >> $GITHUB_STEP_SUMMARY
-          echo "- 💼 LinkedIn: ${{ steps.release_info.outputs.tag_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "- 📱 Telegram: Sent" >> $GITHUB_STEP_SUMMARY
+          echo "- 💼 LinkedIn: Sent" >> $GITHUB_STEP_SUMMARY
         fi
