@@ -85,24 +85,25 @@ jobs:
 
           BODY=$(cat release_body.txt 2>/dev/null || echo "")
 
-          # Clean markdown for LinkedIn (remove markdown syntax, keep plain text)
+          # Clean markdown for LinkedIn (remove emojis and markdown syntax)
           BODY_TEXT=$(echo "$BODY" | \
             sed 's/^### \(.*\)$/\1/g' | \
             sed 's/^## \(.*\)$/\1/g' | \
             sed 's/^# \(.*\)$/\1/g' | \
             sed 's/\*\*\([^*]*\)\*\*/\1/g' | \
             sed 's/`\([^`]*\)`/\1/g' | \
-            sed 's/\[\([^\]]*\)\]([^)]*)/\1/g')
+            sed 's/\[\([^\]]*\)\]([^)]*)/\1/g' | \
+            sed 's/[🚀✨📦📝📅💻🔗💬]//g')
 
-          # Truncate if too long (LinkedIn limit: 3000 chars for text)
+          # Truncate if too long (LinkedIn limit: 3000 chars)
           if [ ${#BODY_TEXT} -gt 1500 ]; then
             BODY_TEXT="${BODY_TEXT:0:1500}...\n\nSee full release notes on GitHub."
           fi
 
           if [ "$IS_PRERELEASE" == "true" ]; then
-            RELEASE_TYPE="⚠️ Pre-release"
+            RELEASE_TYPE="Pre-release"
           else
-            RELEASE_TYPE="✅ Stable Release"
+            RELEASE_TYPE="Stable Release"
           fi
 
           if [ -n "$PUBLISHED_AT" ]; then
@@ -111,30 +112,30 @@ jobs:
             FORMATTED_DATE="N/A"
           fi
 
-          # Build LinkedIn post text
+          # Build LinkedIn post text (NO EMOJIS!)
           cat > linkedin_post.txt << MSGEOF
-🚀 New Release: JsonViewer.Blazor ${TAG_NAME}
+JsonViewer.Blazor ${TAG_NAME} Released!
 
 ${RELEASE_TYPE}
 
-📦 Version: ${VERSION}
-📝 Name: ${NAME}
-📅 Published: ${FORMATTED_DATE}
+Version: ${VERSION}
+Name: ${NAME}
+Published: ${FORMATTED_DATE}
 
-📋 Release Notes:
+Release Notes:
 ${BODY_TEXT}
 
-🔗 Links:
+Links:
 • GitHub: ${URL}
 • NuGet: https://www.nuget.org/packages/JsonViewer.Blazor/${VERSION}
 
-💻 Install:
+Install:
 dotnet add package JsonViewer.Blazor --version ${VERSION}
 MSGEOF
 
           if [ -n "$CUSTOM_MSG" ]; then
             echo "" >> linkedin_post.txt
-            echo "💬 ${CUSTOM_MSG}" >> linkedin_post.txt
+            echo "${CUSTOM_MSG}" >> linkedin_post.txt
           fi
 
           echo "" >> linkedin_post.txt
@@ -143,110 +144,52 @@ MSGEOF
           echo "Post prepared successfully!"
           echo "Post length: $(wc -c < linkedin_post.txt) bytes"
 
-      - name: Send to LinkedIn
+          # Save to output for next step
+          {
+            echo 'post_content<<EOF'
+            cat linkedin_post.txt
+            echo EOF
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Send to LinkedIn via Make.com
         env:
-          LINKEDIN_ACCESS_TOKEN: ${{ secrets.LINKEDIN_ACCESS_TOKEN }}
-          LINKEDIN_ORG_ID: ${{ secrets.LINKEDIN_ORG_ID }}
+          MAKE_WEBHOOK_URL: ${{ secrets.MAKE_WEBHOOK_URL }}
         run: |
-          if [ -z "$LINKEDIN_ACCESS_TOKEN" ] || [ -z "$LINKEDIN_ORG_ID" ]; then
-            echo "LinkedIn credentials not configured!"
-            echo "Please set LINKEDIN_ACCESS_TOKEN and LINKEDIN_ORG_ID secrets."
+          if [ -z "$MAKE_WEBHOOK_URL" ]; then
+            echo "Make.com Webhook URL not configured!"
+            echo "Please set MAKE_WEBHOOK_URL secret."
             exit 1
           fi
 
           POST_TEXT=$(cat linkedin_post.txt)
+          TAG_NAME="${{ steps.latest_release.outputs.tag_name }}"
+          URL="${{ steps.latest_release.outputs.url }}"
 
-          echo "Sending post to LinkedIn..."
+          echo "Sending post to LinkedIn via Make.com..."
 
-          # LinkedIn API v2 requires UGC Post format
-          # First, create the UGC Post
-          UGC_POST_RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
-            "https://api.linkedin.com/v2/ugcPosts" \
-            -H "Authorization: Bearer ${LINKEDIN_ACCESS_TOKEN}" \
+          RESPONSE=$(curl -s -w "\n%{http_code}" -X POST "$MAKE_WEBHOOK_URL" \
             -H "Content-Type: application/json" \
-            -H "X-Restli-Protocol-Version: 2.0.0" \
             -d "$(jq -n \
-              --arg author "urn:li:organization:${LINKEDIN_ORG_ID}" \
-              --arg text "$POST_TEXT" \
-              --arg visibility "PUBLIC" \
+              --arg message "$POST_TEXT" \
+              --arg version "$TAG_NAME" \
+              --arg url "$URL" \
               '{
-                author: $author,
-                lifecycleState: "PUBLISHED",
-                specificContent: {
-                  "com.linkedin.ugc.ShareContent": {
-                    shareCommentary: {
-                      text: $text
-                    },
-                    shareMediaCategory: "NONE"
-                  }
-                },
-                visibility: {
-                  "com.linkedin.ugc.MemberNetworkVisibility": $visibility
-                }
+                message: $message,
+                version: $version,
+                url: $url
               }')")
 
-          HTTP_CODE=$(echo "$UGC_POST_RESPONSE" | tail -n1)
-          RESP_BODY=$(echo "$UGC_POST_RESPONSE" | sed '$d')
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+          RESP_BODY=$(echo "$RESPONSE" | sed '$d')
 
-          if [ "$HTTP_CODE" -eq 201 ]; then
-            echo "Post sent successfully!"
-            POST_ID=$(echo "$RESP_BODY" | jq -r '.id // empty')
-            if [ -n "$POST_ID" ] && [ "$POST_ID" != "null" ]; then
-              echo "Post ID: $POST_ID"
-            fi
+          if [ "$HTTP_CODE" -eq 200 ] || [ "$HTTP_CODE" -eq 202 ]; then
+            echo "Post sent successfully to Make.com!"
+            echo "Response: $RESP_BODY"
           else
             echo "Failed to send post!"
             echo "HTTP Code: $HTTP_CODE"
             echo "Response: $RESP_BODY"
-
-            # Try alternative method: Share API (simpler, but may require different permissions)
-            echo "Trying alternative Share API method..."
-
-            SHARE_RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
-              "https://api.linkedin.com/v2/shares" \
-              -H "Authorization: Bearer ${LINKEDIN_ACCESS_TOKEN}" \
-              -H "Content-Type: application/json" \
-              -H "X-Restli-Protocol-Version: 2.0.0" \
-              -d "$(jq -n \
-                --arg text "$POST_TEXT" \
-                --arg url "${{ steps.latest_release.outputs.url }}" \
-                '{
-                  content: {
-                    "com.linkedin.ugc.ShareContent": {
-                      shareCommentary: {
-                        text: $text
-                      },
-                      shareMediaCategory: "ARTICLE",
-                      media: [
-                        {
-                          status: "READY",
-                          originalUrl: $url
-                        }
-                      ]
-                    }
-                  },
-                  distribution: {
-                    linkedInDistributionTarget: {}
-                  },
-                  owner: "urn:li:organization:${LINKEDIN_ORG_ID}",
-                  subject: "JsonViewer.Blazor ${TAG_NAME} Released"
-                }')")
-
-            SHARE_HTTP_CODE=$(echo "$SHARE_RESPONSE" | tail -n1)
-            SHARE_RESP_BODY=$(echo "$SHARE_RESPONSE" | sed '$d')
-
-            if [ "$SHARE_HTTP_CODE" -eq 201 ]; then
-              echo "Post sent successfully via Share API!"
-              SHARE_ID=$(echo "$SHARE_RESP_BODY" | jq -r '.id // empty')
-              if [ -n "$SHARE_ID" ] && [ "$SHARE_ID" != "null" ]; then
-                echo "Share ID: $SHARE_ID"
-              fi
-            else
-              echo "Share API also failed!"
-              echo "HTTP Code: $SHARE_HTTP_CODE"
-              echo "Response: $SHARE_RESP_BODY"
-              exit 1
-            fi
+            exit 1
           fi
 
       - name: Summary
@@ -269,4 +212,10 @@ MSGEOF
           echo "### Links" >> "$GITHUB_STEP_SUMMARY"
           echo "- [GitHub Release](${{ steps.latest_release.outputs.url }})" >> "$GITHUB_STEP_SUMMARY"
           echo "- [NuGet Package](https://www.nuget.org/packages/JsonViewer.Blazor/${{ steps.latest_release.outputs.version }})" >> "$GITHUB_STEP_SUMMARY"
-
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "### Post Content" >> "$GITHUB_STEP_SUMMARY"
+          echo '
+```' >> "$GITHUB_STEP_SUMMARY"
+cat linkedin_post.txt >> "$GITHUB_STEP_SUMMARY"
+echo '
+```' >> "$GITHUB_STEP_SUMMARY"
