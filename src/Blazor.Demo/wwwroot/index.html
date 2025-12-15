@@ -101,20 +101,6 @@
         <a class="dismiss">🗙</a>
     </div>
 
-    <script src="js/theme.js"></script>
-    <script>
-        // Apply saved theme immediately to prevent flash
-        (function() {
-            try {
-                var savedTheme = localStorage.getItem('demo-theme');
-                if (savedTheme === 'light') {
-                    document.documentElement.setAttribute('data-theme', 'light');
-                }
-            } catch (e) {
-                console.log('Could not load theme preference');
-            }
-        })();
-    </script>
     <script src="_framework/blazor.webassembly.js"></script>
 </body>
 

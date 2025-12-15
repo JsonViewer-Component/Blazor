@@ -58,7 +58,7 @@ jobs:
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "name=$NAME" >> "$GITHUB_OUTPUT"
           echo "url=$URL" >> "$GITHUB_OUTPUT"
-          
+
           # Clean body text (remove emojis and markdown)
           CLEAN_BODY=$(echo "$BODY" | sed 's/[🚀✨📦📝📅💻🔗💬]//g' | sed 's/\*\*//g' | sed 's/`//g' | sed 's/# //g')
           echo "$CLEAN_BODY" > body.txt
@@ -71,12 +71,12 @@ jobs:
           NAME="${{ steps.release.outputs.name }}"
           URL="${{ steps.release.outputs.url }}"
           BODY=$(cat body.txt 2>/dev/null || echo "")
-          
+
           # Truncate body if too long
           if [ ${#BODY} -gt 1000 ]; then
             BODY="${BODY:0:1000}..."
           fi
-          
+
           # Create message using printf to avoid YAML parsing issues
           {
             printf 'JsonViewer.Blazor %s Released!\n\n' "$TAG"
@@ -90,12 +90,12 @@ jobs:
             printf 'dotnet add package JsonViewer.Blazor --version %s\n\n' "$VERSION"
             printf '#JsonViewer #Blazor #DotNet #OpenSource #CSharp\n'
           } > message.txt
-          
+
           # Read message and encode for JSON
           MESSAGE_CONTENT=$(cat message.txt)
           MESSAGE_ENCODED=$(echo "$MESSAGE_CONTENT" | jq -Rs .)
           echo "encoded=$MESSAGE_ENCODED" >> "$GITHUB_OUTPUT"
-          
+
           echo "Message prepared successfully!"
           echo "Message length: $(wc -c < message.txt) bytes"
 
