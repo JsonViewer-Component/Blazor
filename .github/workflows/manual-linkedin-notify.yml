@@ -1,5 +1,5 @@
 name: Manual LinkedIn Notification
-
+ 
 on:
   workflow_dispatch:
     inputs:
