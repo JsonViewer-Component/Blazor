@@ -191,9 +191,25 @@ jobs:
           sed 's/\*\*\([^*]*\)\*\*/<b>\1<\/b>/g' | \
           sed 's/`\([^`]*\)`/<code>\1<\/code>/g')
 
-        # Truncate if too long
+        # Truncate if too long (close any unclosed HTML tags)
         if [ ${#BODY_HTML} -gt 1800 ]; then
-          BODY_HTML="${BODY_HTML:0:1800}... (truncated)"
+          BODY_HTML="${BODY_HTML:0:1800}"
+          # Remove any incomplete HTML tag at the end
+          BODY_HTML=$(echo "$BODY_HTML" | sed 's/<[^>]*$//')
+          # Count and close unclosed tags (simple approach for b and code tags)
+          OPEN_B_COUNT=$(echo "$BODY_HTML" | grep -o '<b>' | wc -l | tr -d ' ')
+          CLOSE_B_COUNT=$(echo "$BODY_HTML" | grep -o '</b>' | wc -l | tr -d ' ')
+          OPEN_CODE_COUNT=$(echo "$BODY_HTML" | grep -o '<code>' | wc -l | tr -d ' ')
+          CLOSE_CODE_COUNT=$(echo "$BODY_HTML" | grep -o '</code>' | wc -l | tr -d ' ')
+          while [ "$OPEN_B_COUNT" -gt "$CLOSE_B_COUNT" ]; do
+            BODY_HTML="${BODY_HTML}</b>"
+            CLOSE_B_COUNT=$((CLOSE_B_COUNT + 1))
+          done
+          while [ "$OPEN_CODE_COUNT" -gt "$CLOSE_CODE_COUNT" ]; do
+            BODY_HTML="${BODY_HTML}</code>"
+            CLOSE_CODE_COUNT=$((CLOSE_CODE_COUNT + 1))
+          done
+          BODY_HTML="${BODY_HTML}... (truncated)"
         fi
 
         if [ "$IS_PRERELEASE" == "true" ]; then
