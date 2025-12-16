@@ -16,7 +16,7 @@
   <PropertyGroup>
     <!-- Basic Info -->
     <PackageId>JsonViewer.Blazor</PackageId>
-    <Version>0.0.4-beta</Version>
+    <Version>0.0.5-beta</Version>
     <Title>JSON Viewer for Blazor</Title>
     <Authors>Parsa Panahpoor</Authors>
     <Company>JsonViewer-Component</Company>
@@ -51,15 +51,28 @@
 
     <!-- Release Notes - Shows in NuGet "Release Notes" tab -->
     <PackageReleaseNotes>
-## 🎉 Version 0.0.4-beta
+## 🚀 Version 0.0.5-beta
 
 ### ✨ New Features
-- Multi-framework support: .NET 6, .NET 7, .NET 8, .NET 9, .NET 10
-- Wider compatibility for all Blazor applications
+- **Enhanced JSON Path Display Modal**: Complete redesign from popup to professional centered modal dialog
+- **Modern UI**: Beautiful card-based layout with icon indicators for each information type
+- **Better UX**: Improved readability with organized information cards showing JSON Path, Property Name, Type, and Value
+- **Keyboard Support**: Close modal with ESC key
+- **Click Outside**: Close modal by clicking on the overlay
 
-### 🔧 Changes
-- Updated to support multiple .NET versions
-- Optimized dependencies for each framework
+### 🔧 Improvements
+- **Fullscreen Mode Enhancements**: Fixed display issues with all modals in fullscreen mode
+- **Smart DOM Management**: Automatic modal repositioning using MutationObserver for seamless fullscreen experience
+- **Z-Index Optimization**: Proper layering ensures modals appear above fullscreen container
+- **Consistent Behavior**: All modals now behave uniformly across normal and fullscreen modes
+- **Dark Theme Support**: Full dark theme compatibility for all modals
+
+### 🐛 Bug Fixes
+- Fixed: JSON Path Display modal not appearing in fullscreen mode
+- Fixed: JSON Statistics modal not appearing in fullscreen mode
+- Fixed: Modal z-index conflicts with fullscreen container
+- Fixed: Modal positioning issues in fullscreen mode
+- Fixed: CSS compilation errors with @media queries in Razor components
 
 For full changelog, visit: https://github.com/JsonViewer-Component/Blazor/blob/main/docs/CHANGELOG.md
     </PackageReleaseNotes>
