@@ -101,7 +101,39 @@
         <a class="dismiss">🗙</a>
     </div>
 
+    <!-- Scripts -->
+    <script src="js/theme.js"></script>
     <script src="_framework/blazor.webassembly.js"></script>
+    
+    <script>
+        // Copy to clipboard functionality for code blocks
+        document.addEventListener('DOMContentLoaded', function() {
+            document.addEventListener('click', function(e) {
+                if (e.target.closest('.copy-btn')) {
+                    const btn = e.target.closest('.copy-btn');
+                    const codeBlock = btn.closest('.code-block');
+                    const code = codeBlock.querySelector('code');
+                    
+                    if (code) {
+                        const text = code.textContent;
+                        
+                        navigator.clipboard.writeText(text).then(function() {
+                            const originalText = btn.textContent;
+                            btn.textContent = '✓';
+                            btn.style.background = '#10b981';
+                            
+                            setTimeout(function() {
+                                btn.textContent = originalText;
+                                btn.style.background = '';
+                            }, 2000);
+                        }).catch(function(err) {
+                            console.error('Failed to copy:', err);
+                        });
+                    }
+                }
+            });
+        });
+    </script>
 </body>
 
 </html>
