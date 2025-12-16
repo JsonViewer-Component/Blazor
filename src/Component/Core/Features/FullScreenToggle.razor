@@ -40,6 +40,12 @@
                         originalBodyPosition: null,
                         originalBodyWidth: null,
                         originalBodyHeight: null,
+                        originalCardStyle: null,
+                        originalCardBodyStyle: null,
+                        originalRowStyle: null,
+                        originalColStyle: null,
+                        originalParent: null,
+                        originalNextSibling: null,
                         scrollPosition: 0,
                         isFullScreen: false
                     };
@@ -50,7 +56,10 @@
 
                         if (!container || state.isFullScreen) return;
 
+                        // Store original styles and DOM position
                         state.originalContainerStyle = container.getAttribute('style') || '';
+                        state.originalParent = container.parentNode;
+                        state.originalNextSibling = container.nextSibling;
                         state.originalBodyOverflow = document.body.style.overflow;
                         state.originalBodyPosition = document.body.style.position;
                         state.originalBodyWidth = document.body.style.width;
@@ -59,15 +68,55 @@
 
                         const backgroundColor = isDarkTheme ? '#36363e' : '#ffffff';
 
+                        // Move container to body to escape parent constraints
+                        document.body.appendChild(container);
+
+                        // Apply fullscreen styles
                         container.classList.add('fullscreen-active');
                         container.style.backgroundColor = backgroundColor;
+                        container.style.position = 'fixed';
+                        container.style.top = '0';
+                        container.style.left = '0';
+                        container.style.width = '100vw';
+                        container.style.height = '100vh';
+                        container.style.zIndex = '9999';
+                        container.style.margin = '0';
+                        container.style.padding = '0';
+                        container.style.border = 'none';
+                        container.style.borderRadius = '0';
+                        container.style.boxShadow = 'none';
 
+                        // Lock body scroll
                         document.body.style.overflow = 'hidden';
                         document.body.style.position = 'fixed';
                         document.body.style.width = '100%';
                         document.body.style.height = '100%';
+                        document.body.style.top = '0';
+                        document.body.style.left = '0';
                         document.body.classList.add('fullscreen-mode');
                         document.documentElement.classList.add('fullscreen-active');
+
+                        // Move JsonPathDisplay modal to body if it exists
+                        const pathModal = document.querySelector('.path-modal-overlay');
+                        if (pathModal && pathModal.parentNode !== document.body) {
+                            if (!pathModal._originalParent) {
+                                pathModal._originalParent = pathModal.parentNode;
+                                pathModal._originalNextSibling = pathModal.nextSibling;
+                            }
+                            document.body.appendChild(pathModal);
+                            console.log('✅ Moved existing JsonPathDisplay modal to body for fullscreen compatibility');
+                        }
+
+                        // Move JsonStatistics modal to body if it exists
+                        const statsModal = document.querySelector('.stats-modal-overlay');
+                        if (statsModal && statsModal.parentNode !== document.body) {
+                            if (!statsModal._originalParent) {
+                                statsModal._originalParent = statsModal.parentNode;
+                                statsModal._originalNextSibling = statsModal.nextSibling;
+                            }
+                            document.body.appendChild(statsModal);
+                            console.log('✅ Moved existing JsonStatistics modal to body for fullscreen compatibility');
+                        }
 
                         state.isFullScreen = true;
                         console.log('✅ Entered FullScreen Mode');
@@ -79,35 +128,88 @@
 
                         if (!container || !state.isFullScreen) return;
 
+                        // Remove fullscreen class
                         container.classList.remove('fullscreen-active');
 
-                        if (state.originalContainerStyle !== null) {
+                        // Restore container styles
+                        if (state.originalContainerStyle !== null && state.originalContainerStyle !== '') {
                             container.setAttribute('style', state.originalContainerStyle);
+                        } else {
+                            container.removeAttribute('style');
                         }
 
+                        // Move container back to original position
+                        if (state.originalParent) {
+                            if (state.originalNextSibling) {
+                                state.originalParent.insertBefore(container, state.originalNextSibling);
+                            } else {
+                                state.originalParent.appendChild(container);
+                            }
+                        }
+
+                        // Restore body styles
                         if (state.originalBodyOverflow !== null) {
                             document.body.style.overflow = state.originalBodyOverflow;
+                        } else {
+                            document.body.style.overflow = '';
                         }
                         if (state.originalBodyPosition !== null) {
                             document.body.style.position = state.originalBodyPosition;
+                        } else {
+                            document.body.style.position = '';
                         }
                         if (state.originalBodyWidth !== null) {
                             document.body.style.width = state.originalBodyWidth;
+                        } else {
+                            document.body.style.width = '';
                         }
                         if (state.originalBodyHeight !== null) {
                             document.body.style.height = state.originalBodyHeight;
+                        } else {
+                            document.body.style.height = '';
                         }
+                        document.body.style.top = '';
+                        document.body.style.left = '';
 
                         document.body.classList.remove('fullscreen-mode');
                         document.documentElement.classList.remove('fullscreen-active');
 
+                        // Restore JsonPathDisplay modal to original position if it was moved to body
+                        const pathModal = document.querySelector('.path-modal-overlay');
+                        if (pathModal && pathModal._originalParent) {
+                            if (pathModal._originalNextSibling) {
+                                pathModal._originalParent.insertBefore(pathModal, pathModal._originalNextSibling);
+                            } else {
+                                pathModal._originalParent.appendChild(pathModal);
+                            }
+                            pathModal._originalParent = null;
+                            pathModal._originalNextSibling = null;
+                            console.log('✅ Restored JsonPathDisplay modal to original position after exiting fullscreen');
+                        }
+
+                        // Restore JsonStatistics modal to original position if it was moved to body
+                        const statsModal = document.querySelector('.stats-modal-overlay');
+                        if (statsModal && statsModal._originalParent) {
+                            if (statsModal._originalNextSibling) {
+                                statsModal._originalParent.insertBefore(statsModal, statsModal._originalNextSibling);
+                            } else {
+                                statsModal._originalParent.appendChild(statsModal);
+                            }
+                            statsModal._originalParent = null;
+                            statsModal._originalNextSibling = null;
+                            console.log('✅ Restored JsonStatistics modal to original position after exiting fullscreen');
+                        }
+
                         window.scrollTo(0, state.scrollPosition);
 
+                        // Reset state
                         state.originalContainerStyle = null;
                         state.originalBodyOverflow = null;
                         state.originalBodyPosition = null;
                         state.originalBodyWidth = null;
                         state.originalBodyHeight = null;
+                        state.originalParent = null;
+                        state.originalNextSibling = null;
                         state.scrollPosition = 0;
                         state.isFullScreen = false;
 

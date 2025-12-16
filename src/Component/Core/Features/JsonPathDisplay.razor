@@ -1,0 +1,552 @@
+@using Component.Models
+@using Microsoft.JSInterop
+@using Component.Core.Shared
+@inject IJSRuntime JSRuntime
+@implements IDisposable
+
+@* JSON Path Display Modal Component *@
+
+@if (PathInfo != null && PathInfo.IsSelected)
+{
+    <div class="path-modal-overlay" @onclick="HandleOverlayClick">
+        <div class="path-modal-container @(IsDarkTheme ? "dark-theme" : "")" @onclick:stopPropagation="true">
+
+            @* Header *@
+            <div class="path-modal-header">
+                <div class="path-modal-title">
+                    <Icon Name="link-45deg" Size="20" />
+                    <span>JSON Path</span>
+                </div>
+                <button class="path-modal-close" @onclick="HandleClose" title="Close (ESC)">
+                    <Icon Name="x-lg" Size="20" />
+                </button>
+            </div>
+
+            @* Content *@
+            <div class="path-modal-content">
+                <div class="path-info-grid">
+                    @* Path *@
+                    <div class="path-info-card">
+                        <div class="path-info-icon icon-path">
+                            <Icon Name="diagram-3" Size="24" />
+                        </div>
+                        <div class="path-info-details">
+                            <div class="path-info-label">Path</div>
+                            <code class="path-info-value path-value-text">@PathInfo.Path</code>
+                        </div>
+                    </div>
+
+                    @* Property Name *@
+                    <div class="path-info-card">
+                        <div class="path-info-icon icon-property">
+                            <Icon Name="tag" Size="24" />
+                        </div>
+                        <div class="path-info-details">
+                            <div class="path-info-label">Property</div>
+                            <div class="path-info-value property-name-text">@PathInfo.PropertyName</div>
+                        </div>
+                    </div>
+
+                    @* Type *@
+                    <div class="path-info-card">
+                        <div class="path-info-icon icon-type">
+                            <Icon Name="code-square" Size="24" />
+                        </div>
+                        <div class="path-info-details">
+                            <div class="path-info-label">Type</div>
+                            <span class="path-info-value property-type-badge type-@PathInfo.PropertyType.ToLower()">
+                                @PathInfo.PropertyType
+                            </span>
+                        </div>
+                    </div>
+
+                    @* Value *@
+                    @if (!string.IsNullOrEmpty(PathInfo.PropertyValue))
+                    {
+                        <div class="path-info-card path-info-card-full">
+                            <div class="path-info-icon icon-value">
+                                <Icon Name="file-earmark-text" Size="24" />
+                            </div>
+                            <div class="path-info-details">
+                                <div class="path-info-label">Value</div>
+                                <code class="path-info-value property-value-text">@TruncateValue(PathInfo.PropertyValue)</code>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            @* Footer *@
+            <div class="path-modal-footer">
+                <button class="btn btn-sm btn-primary" @onclick="CopyPath" title="Copy JSON Path">
+                    <Icon Name="clipboard" Size="14" />
+                    <span class="ms-1">@(isCopied ? "Copied!" : "Copy Path")</span>
+                </button>
+                <button class="btn btn-sm btn-secondary" @onclick="HandleClose">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public JsonPathInfo? PathInfo { get; set; }
+
+    [Parameter]
+    public bool IsDarkTheme { get; set; }
+
+    [Parameter]
+    public EventCallback OnClose { get; set; }
+
+    [Parameter]
+    public EventCallback<string> OnCopyPath { get; set; }
+
+    private bool isCopied = false;
+    private DotNetObjectReference<JsonPathDisplay>? dotNetHelper;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            dotNetHelper = DotNetObjectReference.Create(this);
+            await RegisterKeyboardShortcuts();
+        }
+    }
+
+    private async Task RegisterKeyboardShortcuts()
+    {
+        await JSRuntime.InvokeVoidAsync("eval", @"
+            (function() {
+                if (!window.pathModalKeyHandlerRegistered) {
+                    document.addEventListener('keydown', function(e) {
+                        if (e.key === 'Escape') {
+                            const modal = document.querySelector('.path-modal-overlay');
+                            if (modal) {
+                                const closeBtn = modal.querySelector('.path-modal-close');
+                                if (closeBtn) {
+                                    closeBtn.click();
+                                }
+                            }
+                        }
+                    });
+                    window.pathModalKeyHandlerRegistered = true;
+                }
+            })();
+        ");
+    }
+
+    private async Task HandleClose()
+    {
+        await OnClose.InvokeAsync();
+    }
+
+    private void HandleOverlayClick()
+    {
+        _ = HandleClose();
+    }
+
+    private async Task CopyPath()
+    {
+        if (PathInfo == null) return;
+
+        await OnCopyPath.InvokeAsync(PathInfo.Path);
+        isCopied = true;
+        StateHasChanged();
+
+        await Task.Delay(2000);
+        isCopied = false;
+        StateHasChanged();
+    }
+
+    private string TruncateValue(string value, int maxLength = 200)
+    {
+        if (string.IsNullOrEmpty(value)) return value;
+
+        if (value.Length <= maxLength)
+            return value;
+
+        return value.Substring(0, maxLength) + "...";
+    }
+
+    public void Dispose()
+    {
+        dotNetHelper?.Dispose();
+    }
+}
+
+<style>
+    /* #region Modal Overlay */
+    .path-modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(4px);
+        z-index: 10000; /* Higher than fullscreen container (9999) */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        animation: fadeIn 0.2s ease-out;
+    }
+
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+        to {
+            opacity: 1;
+        }
+    }
+    /* #endregion */
+
+    /* #region Modal Container */
+    .path-modal-container {
+        background-color: #ffffff;
+        border-radius: 12px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        max-width: 700px;
+        width: 90%;
+        max-height: 85vh;
+        display: flex;
+        flex-direction: column;
+        animation: slideUp 0.3s ease-out;
+        overflow: hidden;
+    }
+
+    @@keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .path-modal-container.dark-theme {
+        background-color: #1e1e1e;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+    }
+    /* #endregion */
+
+    /* #region Modal Header */
+    .path-modal-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 20px 24px;
+        border-bottom: 1px solid #e0e0e0;
+    }
+
+    .dark-theme .path-modal-header {
+        border-bottom-color: #3c3c3c;
+    }
+
+    .path-modal-title {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 20px;
+        font-weight: 600;
+        color: #333;
+    }
+
+    .dark-theme .path-modal-title {
+        color: #d4d4d4;
+    }
+
+    .path-modal-close {
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        padding: 8px;
+        border-radius: 6px;
+        color: #666;
+        transition: all 0.2s ease;
+    }
+
+    .path-modal-close:hover {
+        background-color: #f0f0f0;
+        color: #dc3545;
+    }
+
+    .dark-theme .path-modal-close {
+        color: #d4d4d4;
+    }
+
+    .dark-theme .path-modal-close:hover {
+        background-color: #3c3c3c;
+        color: #f48771;
+    }
+    /* #endregion */
+
+    /* #region Modal Content */
+    .path-modal-content {
+        padding: 24px;
+        overflow-y: auto;
+        flex: 1;
+    }
+
+    .path-info-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .path-info-card {
+        background-color: #f8f9fa;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 16px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        transition: all 0.2s ease;
+    }
+
+    .path-info-card:hover {
+        border-color: #007bff;
+        box-shadow: 0 4px 12px rgba(0, 123, 255, 0.15);
+        transform: translateY(-2px);
+    }
+
+    .path-info-card-full {
+        grid-column: 1 / -1;
+    }
+
+    .dark-theme .path-info-card {
+        background-color: #2d2d30;
+        border-color: #3c3c3c;
+    }
+
+    .dark-theme .path-info-card:hover {
+        border-color: #007acc;
+        box-shadow: 0 4px 12px rgba(0, 122, 204, 0.25);
+    }
+
+    .path-info-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .icon-path {
+        background-color: rgba(79, 70, 229, 0.2);
+        color: #4f46e5;
+    }
+
+    .icon-property {
+        background-color: rgba(59, 130, 246, 0.2);
+        color: #3b82f6;
+    }
+
+    .icon-type {
+        background-color: rgba(16, 185, 129, 0.2);
+        color: #10b981;
+    }
+
+    .icon-value {
+        background-color: rgba(245, 158, 11, 0.2);
+        color: #f59e0b;
+    }
+
+    .path-info-details {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        min-width: 0;
+    }
+
+    .path-info-label {
+        font-size: 12px;
+        font-weight: 500;
+        color: #666;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .dark-theme .path-info-label {
+        color: #858585;
+    }
+
+    .path-info-value {
+        font-size: 14px;
+        font-weight: 600;
+        color: #333;
+        word-break: break-word;
+    }
+
+    .dark-theme .path-info-value {
+        color: #d4d4d4;
+    }
+
+    .path-value-text {
+        font-family: 'Consolas', 'Monaco', monospace;
+        color: #4f46e5;
+        background-color: rgba(79, 70, 229, 0.1);
+        padding: 8px 12px;
+        border-radius: 6px;
+        border: 1px solid rgba(79, 70, 229, 0.2);
+    }
+
+    .dark-theme .path-value-text {
+        color: #a78bfa;
+        background-color: rgba(167, 139, 250, 0.1);
+        border-color: rgba(167, 139, 250, 0.2);
+    }
+
+    .property-name-text {
+        font-family: 'Consolas', 'Monaco', monospace;
+        color: #3b82f6;
+    }
+
+    .dark-theme .property-name-text {
+        color: #60a5fa;
+    }
+
+    .property-type-badge {
+        display: inline-block;
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .type-string { background: #dbeafe; color: #1e40af; }
+    .type-number { background: #fce7f3; color: #be185d; }
+    .type-boolean { background: #dcfce7; color: #15803d; }
+    .type-object { background: #fef3c7; color: #92400e; }
+    .type-array { background: #ede9fe; color: #6b21a8; }
+    .type-null { background: #f1f5f9; color: #475569; }
+
+    .dark-theme .type-string { background: rgba(59, 130, 246, 0.2); color: #93c5fd; }
+    .dark-theme .type-number { background: rgba(236, 72, 153, 0.2); color: #f9a8d4; }
+    .dark-theme .type-boolean { background: rgba(34, 197, 94, 0.2); color: #86efac; }
+    .dark-theme .type-object { background: rgba(251, 191, 36, 0.2); color: #fcd34d; }
+    .dark-theme .type-array { background: rgba(168, 85, 247, 0.2); color: #c4b5fd; }
+    .dark-theme .type-null { background: rgba(100, 116, 139, 0.2); color: #94a3b8; }
+
+    .property-value-text {
+        font-family: 'Consolas', 'Monaco', monospace;
+        color: #333;
+        background-color: #f8fafc;
+        padding: 8px 12px;
+        border-radius: 6px;
+        border: 1px solid #e2e8f0;
+        max-height: 150px;
+        overflow-y: auto;
+        display: block;
+    }
+
+    .dark-theme .property-value-text {
+        color: #d4d4d4;
+        background-color: #252526;
+        border-color: #3c3c3c;
+    }
+    /* #endregion */
+
+    /* #region Modal Footer */
+    .path-modal-footer {
+        padding: 16px 24px;
+        border-top: 1px solid #e0e0e0;
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+    }
+
+    .dark-theme .path-modal-footer {
+        border-top-color: #3c3c3c;
+    }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        padding: 8px 16px;
+        border-radius: 6px;
+        font-weight: 500;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        border: none;
+    }
+
+    .btn-sm {
+        padding: 6px 12px;
+        font-size: 13px;
+    }
+
+    .btn-primary {
+        background-color: #007bff;
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background-color: #0056b3;
+    }
+
+    .btn-secondary {
+        background-color: #6c757d;
+        color: white;
+    }
+
+    .btn-secondary:hover {
+        background-color: #545b62;
+    }
+
+    .ms-1 {
+        margin-left: 0.25rem;
+    }
+    /* #endregion */
+
+    /* #region Scrollbar */
+    .path-modal-content::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    .path-modal-content::-webkit-scrollbar-track {
+        background: #f1f1f1;
+    }
+
+    .path-modal-content::-webkit-scrollbar-thumb {
+        background: #c1c1c1;
+        border-radius: 4px;
+    }
+
+    .path-modal-content::-webkit-scrollbar-thumb:hover {
+        background: #a1a1a1;
+    }
+
+    .dark-theme .path-modal-content::-webkit-scrollbar-track {
+        background: #1e1e1e;
+    }
+
+    .dark-theme .path-modal-content::-webkit-scrollbar-thumb {
+        background: #424242;
+    }
+
+    .dark-theme .path-modal-content::-webkit-scrollbar-thumb:hover {
+        background: #4e4e4e;
+    }
+    /* #endregion */
+
+    /* #region Responsive */
+    @@media (max-width: 768px) {
+        .path-modal-container {
+            width: 95%;
+            max-height: 90vh;
+        }
+    }
+    /* #endregion */
+</style>

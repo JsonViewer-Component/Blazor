@@ -296,7 +296,6 @@ html, body {
     padding: 4px;
     border: 1px solid var(--border-color);
     box-shadow: var(--shadow-glow);
-    min-height: 500px;
     overflow: hidden;
     margin-bottom: 24px;
     transition: all 0.3s ease;

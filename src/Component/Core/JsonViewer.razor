@@ -20,11 +20,17 @@
                 IsDarkTheme="@isDarkTheme"
                 OnClose="@CloseStatistics" />
 
+@* JSON Path Display *@
+<JsonPathDisplay PathInfo="@currentJsonPath"
+                 IsDarkTheme="@isDarkTheme"
+                 OnClose="@CloseJsonPath"
+                 OnCopyPath="@CopyJsonPath" />
+
                     <div class="row">
         <div class="col-12">
             <div class="card shadow-sm">
                 <div class="card-body p-0">
-<div class="json-viewer-container @(isDarkTheme ? "dark-theme" : "light-theme") @(isFullScreen ? "full-screen fullscreen-active" : "")"
+<div class="json-viewer-container @(isDarkTheme ? "dark-theme" : "light-theme") @(isFullScreen ? "fullscreen-active" : "")"
      @ref="containerRef" data-theme="@(isDarkTheme ? "dark" : "light")" style="direction:ltr;">
 
     @* Loading State Section *@
@@ -292,6 +298,9 @@
     private bool showStatistics = false;
     private JsonStats? currentStats = null;
 
+    // JSON Path
+    private JsonPathInfo? currentJsonPath = null;
+
     #endregion
 
     #region Loading State
@@ -556,7 +565,112 @@
                     window.jsonViewerActiveLineInitialized = true;
                 }
 
-                window.jsonViewerInitialized = true;
+                    // Register click handler for property names using event delegation
+                    if (!window.jsonViewerPropertyClickInitialized) {
+                        function handlePropertyClick(e) {
+                            // Check if clicked element or its parent has clickable-property class
+                            let propertyElement = e.target;
+
+                            // Try to find .clickable-property in the clicked element or its parents
+                            while (propertyElement && propertyElement !== document.body) {
+                                if (propertyElement.classList && propertyElement.classList.contains('clickable-property')) {
+                                    break;
+                                }
+                                propertyElement = propertyElement.parentElement;
+                            }
+
+                            if (propertyElement && propertyElement.classList && propertyElement.classList.contains('clickable-property')) {
+                                e.preventDefault();
+                                e.stopPropagation();
+
+                                const propertyName = propertyElement.getAttribute('data-property-name') || '';
+                                const propertyPath = propertyElement.getAttribute('data-property-path') || '';
+                                const propertyValue = propertyElement.getAttribute('data-property-value') || '';
+                                const propertyType = propertyElement.getAttribute('data-property-type') || '';
+
+                                console.log('🔵 Property clicked:', { propertyName, propertyPath, propertyValue, propertyType });
+
+                                if (propertyName && window.jsonViewerDotNetHelper) {
+                                    window.jsonViewerDotNetHelper.invokeMethodAsync('OnPropertyClick', propertyName, propertyPath, propertyValue, propertyType).then(() => {
+                                        console.log('✅ OnPropertyClick called successfully');
+                                    }).catch(err => {
+                                        console.error('❌ Error calling OnPropertyClick:', err);
+                                    });
+                                } else {
+                                    console.warn('⚠️ Missing propertyName or dotNetHelper', {
+                                        hasPropertyName: !!propertyName,
+                                        hasDotNetHelper: !!window.jsonViewerDotNetHelper
+                                    });
+                                }
+                            }
+                        }
+
+                        // Use event delegation on document for better coverage
+                        document.addEventListener('click', handlePropertyClick, true); // Use capture phase
+
+                        window.jsonViewerPropertyClickInitialized = true;
+                        console.log('✅ Property click handler registered with event delegation');
+                    }
+
+                    // Move JsonPathDisplay modal to body when in fullscreen mode
+                    if (!window.jsonPathModalFullscreenObserverInitialized) {
+                        const pathModalObserver = new MutationObserver((mutations) => {
+                            mutations.forEach((mutation) => {
+                                if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+                                    mutation.addedNodes.forEach((node) => {
+                                        if (node.nodeType === 1 && node.classList && node.classList.contains('path-modal-overlay')) {
+                                            const fullscreenContainer = document.querySelector('.json-viewer-container.fullscreen-active');
+                                            if (fullscreenContainer && node.parentNode !== document.body) {
+                                                // Store original parent and position for restoration
+                                                if (!node._originalParent) {
+                                                    node._originalParent = node.parentNode;
+                                                    node._originalNextSibling = node.nextSibling;
+                                                }
+                                                // Move to body
+                                                document.body.appendChild(node);
+                                                console.log('✅ Moved JsonPathDisplay modal to body for fullscreen compatibility');
+                                            }
+                                        }
+                                    });
+                                }
+                            });
+                        });
+
+                        pathModalObserver.observe(document.body, { childList: true, subtree: true });
+                        window.jsonPathModalFullscreenObserverInitialized = true;
+                        console.log('✅ JsonPathDisplay modal fullscreen observer initialized');
+                    }
+
+                    // Move JsonStatistics modal to body when in fullscreen mode
+                    if (!window.jsonStatisticsModalFullscreenObserverInitialized) {
+                        const statsModalObserver = new MutationObserver((mutations) => {
+                            mutations.forEach((mutation) => {
+                                if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+                                    mutation.addedNodes.forEach((node) => {
+                                        if (node.nodeType === 1 && node.classList && node.classList.contains('stats-modal-overlay')) {
+                                            const fullscreenContainer = document.querySelector('.json-viewer-container.fullscreen-active');
+                                            if (fullscreenContainer && node.parentNode !== document.body) {
+                                                // Store original parent and position for restoration
+                                                if (!node._originalParent) {
+                                                    node._originalParent = node.parentNode;
+                                                    node._originalNextSibling = node.nextSibling;
+                                                }
+                                                // Move to body
+                                                document.body.appendChild(node);
+                                                console.log('✅ Moved JsonStatistics modal to body for fullscreen compatibility');
+                                            }
+                                        }
+                                    });
+                                }
+                            });
+                        });
+
+                        statsModalObserver.observe(document.body, { childList: true, subtree: true });
+                        window.jsonStatisticsModalFullscreenObserverInitialized = true;
+                        console.log('✅ JsonStatistics modal fullscreen observer initialized');
+                    }
+
+                    window.jsonViewerInitialized = true;
             ");
 
             await jsRuntime.InvokeVoidAsync("registerJsonViewerToggle", dotNetHelper);
@@ -657,9 +771,16 @@
                 Token = prop.Value
             };
 
-            // Build Property content
+            // Build Property content with clickable class and data attributes
             var sb = new StringBuilder();
-            sb.Append($"<span class='json-property-name'>\"{prop.Key}\"</span>"); // Use .Key
+            // Build path by tracking from root - use a simpler approach
+            var propertyPath = BuildJsonPathForProperty(prop.Key, indentLevel);
+            // Use System.Net.WebUtility.HtmlEncode for proper escaping
+            var escapedPropertyName = System.Net.WebUtility.HtmlEncode(prop.Key);
+            var escapedPropertyValue = System.Net.WebUtility.HtmlEncode(GetPropertyValueString(prop.Value));
+            var escapedPropertyPath = System.Net.WebUtility.HtmlEncode(propertyPath);
+            var escapedPropertyType = System.Net.WebUtility.HtmlEncode(GetPropertyType(prop.Value));
+            sb.Append($"<span class=\"json-property-name clickable-property\" data-property-name=\"{escapedPropertyName}\" data-property-path=\"{escapedPropertyPath}\" data-property-value=\"{escapedPropertyValue}\" data-property-type=\"{escapedPropertyType}\">\"{System.Net.WebUtility.HtmlEncode(prop.Key)}\"</span>");
             sb.Append("<span class='json-punctuation'>: </span>");
 
             // Property value
@@ -1405,6 +1526,105 @@ private async Task PerformSearch()
     }
     #endregion
 
+    #region JSON Path Methods
+
+    private string BuildJsonPathForProperty(string propertyName, int indentLevel)
+    {
+        // Simple path building - for now, just return the property name
+        // This can be enhanced later to track the full path from root
+        // For nested objects, we'd need to track the path during rendering
+        return $"$.{propertyName}";
+    }
+
+    private string GetPropertyValueString(JsonNode? node)
+    {
+        if (node == null) return "null";
+
+        if (node is JsonValue jsonValue)
+        {
+            if (jsonValue.TryGetValue<string>(out var strValue))
+                return strValue;
+
+            if (jsonValue.TryGetValue<bool>(out var boolValue))
+                return boolValue.ToString().ToLower();
+
+            return node.ToJsonString();
+        }
+
+        if (node is JsonObject)
+            return "{...}";
+
+        if (node is JsonArray)
+            return "[...]";
+
+        return node.ToJsonString();
+    }
+
+    private string GetPropertyType(JsonNode? node)
+    {
+        if (node == null) return "Null";
+
+        if (node is JsonValue jsonValue)
+        {
+            if (jsonValue.TryGetValue<string>(out _))
+                return "String";
+
+            if (jsonValue.TryGetValue<bool>(out _))
+                return "Boolean";
+
+            if (jsonValue.TryGetValue<int>(out _) ||
+                jsonValue.TryGetValue<long>(out _) ||
+                jsonValue.TryGetValue<decimal>(out _) ||
+                jsonValue.TryGetValue<double>(out _) ||
+                jsonValue.TryGetValue<float>(out _))
+                return "Number";
+        }
+
+        if (node is JsonObject)
+            return "Object";
+
+        if (node is JsonArray)
+            return "Array";
+
+        return "Unknown";
+    }
+
+    private void CloseJsonPath()
+    {
+        currentJsonPath = null;
+        StateHasChanged();
+    }
+
+    private async Task CopyJsonPath(string path)
+    {
+        try
+        {
+            await jsRuntime.InvokeVoidAsync("navigator.clipboard.writeText", path);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error copying path: {ex.Message}");
+        }
+    }
+
+    [JSInvokable]
+    public void OnPropertyClick(string propertyName, string propertyPath, string propertyValue, string propertyType)
+    {
+        currentJsonPath = new JsonPathInfo
+        {
+            Path = propertyPath,
+            PropertyName = propertyName,
+            PropertyValue = propertyValue,
+            PropertyType = propertyType,
+            IsSelected = true,
+            Level = propertyPath.Split('.').Length - 1
+        };
+
+        StateHasChanged();
+    }
+
+    #endregion
+
     #region Fullscreen mode
 
     /// <summary>
@@ -1869,6 +2089,29 @@ private void CloseStatistics()
 
     /* #region JSON Syntax Highlighting */
     .json-property-name {
+        cursor: default;
+    }
+
+    .clickable-property {
+        cursor: pointer !important;
+        transition: all 0.2s ease;
+        padding: 2px 4px;
+        border-radius: 4px;
+        position: relative;
+    }
+
+    .clickable-property:hover {
+        background-color: rgba(59, 130, 246, 0.1);
+        color: #3b82f6;
+        text-decoration: underline;
+    }
+
+    .dark-theme .clickable-property:hover {
+        background-color: rgba(59, 130, 246, 0.2);
+        color: #60a5fa;
+    }
+
+    .json-property-name {
         color: #0451a5;
         font-weight: 500;
     }
@@ -2048,7 +2291,7 @@ private void CloseStatistics()
     }
     /* #endregion */
 
-    /* #region Full Screen Mode */
+    /* #region Full Screen Mode - Legacy support (deprecated, use fullscreen-active) */
     .full-screen {
         position: fixed;
         top: 0;
@@ -2202,12 +2445,12 @@ private void CloseStatistics()
             display: inline-block;
         }
 
-    /* Full Screen Mode */
-    .full-screen .scroll-navigation-buttons {
+    /* Full Screen Mode - Use fullscreen-active instead */
+    .fullscreen-active .scroll-navigation-buttons {
         gap: 10px;
     }
 
-    .full-screen .scroll-nav-btn {
+    .fullscreen-active .scroll-nav-btn {
         min-width: 45px;
         padding: 8px 12px;
     }
@@ -2709,15 +2952,36 @@ private void CloseStatistics()
     padding: 0 !important;
     overflow: hidden !important;
     border-radius: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    max-width: none !important;
+    max-height: none !important;
+}
+
+
+/* Ensure parent elements don't interfere with fullscreen */
+body.fullscreen-mode .row,
+body.fullscreen-mode .col-12,
+body.fullscreen-mode .card,
+body.fullscreen-mode .card-body {
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    overflow: visible !important;
 }
 
 /* Main Layout in FullScreen */
 .fullscreen-active .json-viewer-main-layout {
     height: 100vh !important;
+    width: 100% !important;
     display: flex !important;
-    flex-direction: column !important;
+    flex-direction: row !important;
     padding: 15px !important;
-    gap: 0 !important;
+    gap: 10px !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
 }
 
 /* Content Wrapper in FullScreen */
@@ -2727,15 +2991,22 @@ private void CloseStatistics()
     flex-direction: column !important;
     overflow: hidden !important;
     height: 100% !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
 }
 
 /* JSON Viewer with Sidebar in FullScreen */
 .fullscreen-active .json-viewer-with-sidebar {
     flex: 1 !important;
     display: flex !important;
+    flex-direction: row !important;
     gap: 10px !important;
     height: 100% !important;
+    width: 100% !important;
     overflow: hidden !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
 }
 
 /* Left Sidebar in FullScreen */
@@ -2746,7 +3017,11 @@ private void CloseStatistics()
     gap: 8px !important;
     padding: 10px 5px !important;
     height: 100% !important;
+    width: auto !important;
+    min-width: 60px !important;
     overflow-y: auto !important;
+    overflow-x: hidden !important;
+    box-sizing: border-box !important;
 }
 
 /* Content Column in FullScreen */
@@ -2757,6 +3032,9 @@ private void CloseStatistics()
     gap: 10px !important;
     overflow: hidden !important;
     height: 100% !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
 }
 
 /* Top Toolbar in FullScreen */
@@ -2858,4 +3136,5 @@ html.fullscreen-active {
 /* #endregion */
 
 </style>
+
 
