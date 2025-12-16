@@ -209,31 +209,23 @@ jobs:
         fi
 
         # Build Telegram message
-        cat > telegram_message.txt << MSGEOF
-📢 JsonViewer.Blazor - New Release Published!
-
-${RELEASE_TYPE}
-
-📦 Version: ${TAG_NAME}
-📝 Name: ${NAME}
-📅 Published: ${FORMATTED_DATE}
-
-━━━━━━━━━━━━━━━━━━━━
-
-📋 Release Notes:
-${BODY_HTML}
-
-━━━━━━━━━━━━━━━━━━━━
-
-🔗 Links:
-• <a href="${URL}">View on GitHub</a>
-• <a href="https://www.nuget.org/packages/JsonViewer.Blazor/${VERSION}">View on NuGet</a>
-
-⚡ Install via:
-<code>dotnet add package JsonViewer.Blazor --version ${VERSION}</code>
-
-#JsonViewer #Blazor #DotNet #OpenSource
-MSGEOF
+        {
+          printf '📢 JsonViewer.Blazor - New Release Published!\n\n'
+          printf '%s\n\n' "$RELEASE_TYPE"
+          printf '📦 Version: %s\n' "$TAG_NAME"
+          printf '📝 Name: %s\n' "$NAME"
+          printf '📅 Published: %s\n\n' "$FORMATTED_DATE"
+          printf '━━━━━━━━━━━━━━━━━━━━\n\n'
+          printf '📋 Release Notes:\n'
+          printf '%s\n\n' "$BODY_HTML"
+          printf '━━━━━━━━━━━━━━━━━━━━\n\n'
+          printf '🔗 Links:\n'
+          printf '• <a href="%s">View on GitHub</a>\n' "$URL"
+          printf '• <a href="https://www.nuget.org/packages/JsonViewer.Blazor/%s">View on NuGet</a>\n\n' "$VERSION"
+          printf '⚡ Install via:\n'
+          printf '<code>dotnet add package JsonViewer.Blazor --version %s</code>\n\n' "$VERSION"
+          printf '#JsonViewer #Blazor #DotNet #OpenSource'
+        } > telegram_message.txt
 
         MESSAGE=$(cat telegram_message.txt)
 
