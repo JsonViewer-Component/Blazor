@@ -16,7 +16,7 @@
   <PropertyGroup>
     <!-- Basic Info -->
     <PackageId>JsonViewer.Blazor</PackageId>
-    <Version>0.0.6-beta</Version>
+    <Version>0.0.6</Version>
     <Title>JSON Viewer for Blazor</Title>
     <Authors>Parsa Panahpoor</Authors>
     <Company>JsonViewer-Component</Company>
