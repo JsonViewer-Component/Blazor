@@ -1,6 +1,7 @@
 @using Component.Models
 @using Microsoft.JSInterop
 @using Component.Core.Shared
+@using System.Threading
 @inject IJSRuntime JSRuntime
 @implements IDisposable
 
@@ -105,6 +106,7 @@
 
     private bool isCopied = false;
     private DotNetObjectReference<JsonPathDisplay>? dotNetHelper;
+    private CancellationTokenSource? copyCancellationTokenSource;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -151,13 +153,25 @@
     {
         if (PathInfo == null) return;
 
+        // Cancel any existing copy operation
+        copyCancellationTokenSource?.Cancel();
+        copyCancellationTokenSource?.Dispose();
+        copyCancellationTokenSource = new CancellationTokenSource();
+
         await OnCopyPath.InvokeAsync(PathInfo.Path);
         isCopied = true;
         StateHasChanged();
 
-        await Task.Delay(2000);
-        isCopied = false;
-        StateHasChanged();
+        try
+        {
+            await Task.Delay(2000, copyCancellationTokenSource.Token);
+            isCopied = false;
+            StateHasChanged();
+        }
+        catch (OperationCanceledException)
+        {
+            // Operation was cancelled, ignore
+        }
     }
 
     private string TruncateValue(string value, int maxLength = 200)
@@ -167,11 +181,14 @@
         if (value.Length <= maxLength)
             return value;
 
-        return value.Substring(0, maxLength) + "...";
+        // Use modern string slicing (more efficient)
+        return string.Concat(value.AsSpan(0, maxLength), "...");
     }
 
     public void Dispose()
     {
+        copyCancellationTokenSource?.Cancel();
+        copyCancellationTokenSource?.Dispose();
         dotNetHelper?.Dispose();
     }
 }
