@@ -68,26 +68,27 @@ jobs:
 
     - name: 📦 Pack Component
       run: |
-        PACK_ARGS="/p:PackageVersion=${{ steps.version.outputs.VERSION }}"
-
-        # Add PackageReleaseNotes from GitHub release if available
         if [ "${{ github.event_name }}" == "release" ] && [ -f release_notes.txt ]; then
           # Read release notes and escape for MSBuild property
-          # MSBuild properties need special characters escaped, newlines converted to semicolons or removed
+          # MSBuild properties need special characters escaped, newlines converted to spaces
           RELEASE_NOTES=$(cat release_notes.txt)
           # Escape XML special characters and convert newlines to spaces (MSBuild property limitation)
-          RELEASE_NOTES_ESCAPED=$(echo "$RELEASE_NOTES" | sed ':a;N;$!ba;s/\n/ /g' | sed 's/&/\&amp;/g' | sed 's/</\&lt;/g' | sed 's/>/\&gt;/g' | sed 's/"/\\"/g')
-          PACK_ARGS="$PACK_ARGS /p:PackageReleaseNotes=\"$RELEASE_NOTES_ESCAPED\""
+          RELEASE_NOTES_ESCAPED=$(echo "$RELEASE_NOTES" | sed ':a;N;$!ba;s/\n/ /g' | sed 's/&/\&amp;/g' | sed 's/</\&lt;/g' | sed 's/>/\&gt;/g' | sed 's/"/\\"/g' | sed "s/'/\\'/g")
           echo "✅ Using release notes from GitHub release"
+          dotnet pack ${{ env.PROJECT_PATH }} \
+            --configuration Release \
+            --no-build \
+            --output ./packages \
+            /p:PackageVersion=${{ steps.version.outputs.VERSION }} \
+            /p:PackageReleaseNotes="$RELEASE_NOTES_ESCAPED"
         else
           echo "ℹ️ Using release notes from .csproj file"
+          dotnet pack ${{ env.PROJECT_PATH }} \
+            --configuration Release \
+            --no-build \
+            --output ./packages \
+            /p:PackageVersion=${{ steps.version.outputs.VERSION }}
         fi
-
-        dotnet pack ${{ env.PROJECT_PATH }} \
-          --configuration Release \
-          --no-build \
-          --output ./packages \
-          $PACK_ARGS
 
     - name: 📋 List Packages
       run: |
