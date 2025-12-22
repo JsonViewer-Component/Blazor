@@ -134,7 +134,7 @@ jobs:
     # 4️⃣ Upload as Workflow Artifacts
     # ═══════════════════════════════════════════════════════════
     - name: 📤 Upload Artifacts
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v6
       with:
         name: nuget-packages-${{ steps.version.outputs.VERSION }}
         path: ./packages/*
